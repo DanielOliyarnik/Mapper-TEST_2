@@ -29,6 +29,9 @@ def write_stage_manifest(
     config_snapshot_path: Path,
     metrics_path: Path | None,
     schema_path: Path | None = None,
+    event_log_path: Path | None = None,
+    error_path: Path | None = None,
+    status_detail: str = "",
 ) -> Path:
     manifest = build_stage_manifest(
         request=request,
@@ -36,6 +39,9 @@ def write_stage_manifest(
         config_snapshot_path=config_snapshot_path,
         metrics_path=metrics_path,
         schema_path=schema_path,
+        event_log_path=event_log_path,
+        error_path=error_path,
+        status_detail=status_detail,
     )
     return write_json(manifest_path, stage_manifest_to_dict(manifest))
 

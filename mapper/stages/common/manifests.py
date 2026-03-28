@@ -22,6 +22,9 @@ class StageManifestData:
     upstream_manifest_refs: tuple[Path, ...] = ()
     schema_path: Path | None = None
     warnings: tuple[StageWarning, ...] = ()
+    event_log_path: Path | None = None
+    error_path: Path | None = None
+    status_detail: str = ""
 
 
 @dataclass
@@ -37,6 +40,9 @@ def build_stage_manifest(
     config_snapshot_path: Path,
     metrics_path: Path | None,
     schema_path: Path | None = None,
+    event_log_path: Path | None = None,
+    error_path: Path | None = None,
+    status_detail: str = "",
 ) -> StageManifestData:
     return StageManifestData(
         stage_name=request.stage_name,
@@ -52,6 +58,9 @@ def build_stage_manifest(
         upstream_manifest_refs=request.upstream_manifest_refs,
         schema_path=schema_path,
         warnings=result.warnings,
+        event_log_path=event_log_path,
+        error_path=error_path,
+        status_detail=status_detail,
     )
 
 

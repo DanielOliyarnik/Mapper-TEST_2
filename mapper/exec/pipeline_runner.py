@@ -6,6 +6,7 @@ from mapper.stages.common import InputRef
 
 from .config_resolver import normalize_run_config, resolve_stage_task_config
 from .path_resolver import resolve_input_ref, resolve_latest_stage_manifest, resolve_run_paths
+from .reporting import PipelineReporter
 from .run_catalog import build_pipeline_run_summary, mark_stage_status, record_run_event, write_pipeline_summary
 from .stage_registry import list_stage_definitions
 from .stage_runner import StageRunRecord, load_stage_record_from_manifest, run_stage
@@ -114,13 +115,21 @@ def run_pipeline(
         stage_defs=stage_defs,
     )
     run_paths = resolve_run_paths(resolved.output_root, resolved.run_name, create=True)
+    pipeline_reporter = PipelineReporter(
+        run_name=resolved.run_name,
+        event_log_path=run_paths.pipeline_event_log_path,
+        console=bool(resolved.reporting_cfg.get("console", True)),
+    )
     record_run_event(resolved.output_root, {"event": "run_start", "run_name": resolved.run_name, "timestamp": run_paths.timestamp})
+    pipeline_reporter.info("start", run=resolved.run_name, dataset=resolved.dataset_id)
     sequence = determine_stage_sequence(stage_defs, resolved.requested_stages)
     results: dict[str, StageRunRecord] = {}
     stage_records: list[dict[str, Any]] = []
+    overall_status = "success"
     for stage_name in sequence:
         stage_def = stage_defs[stage_name]
         if stage_name not in resolved.requested_stages:
+            pipeline_reporter.info("reuse", stage=stage_name)
             record = reuse_skipped_stage_outputs(
                 stage_name=stage_name,
                 output_root=resolved.output_root,
@@ -138,6 +147,7 @@ def run_pipeline(
             for reused_name, reused_record in reused_records.items():
                 results.setdefault(reused_name, reused_record)
             task_name = resolved.stage_task_names.get(stage_name, stage_def.spec.default_task)
+            pipeline_reporter.info("begin", stage=stage_name, task=task_name)
             stage_cfg = resolve_stage_task_config(cfg, stage_name, task_name)
             record = run_stage(
                 stage_def=stage_def,
@@ -149,6 +159,7 @@ def run_pipeline(
                 config=stage_cfg,
                 input_refs=input_refs,
                 upstream_manifest_refs=upstream_manifest_refs,
+                reporting_cfg=resolved.reporting_cfg,
             )
         results[stage_name] = record
         mark_stage_status(
@@ -160,6 +171,9 @@ def run_pipeline(
             status=record.result.status,
             execution_mode=record.execution_mode,
             manifest_path=str(record.manifest_path),
+            elapsed_seconds=record.elapsed_seconds,
+            error_path=str(record.error_path) if record.error_path else None,
+            status_detail=record.status_detail,
         )
         stage_records.append(
             {
@@ -168,12 +182,31 @@ def run_pipeline(
                 "status": record.result.status,
                 "execution_mode": record.execution_mode,
                 "manifest_path": str(record.manifest_path),
+                "elapsed_seconds": record.elapsed_seconds,
+                "error_path": str(record.error_path) if record.error_path else None,
             }
         )
-    record_run_event(resolved.output_root, {"event": "run_end", "run_name": resolved.run_name, "timestamp": run_paths.timestamp, "stages": list(sequence)})
+        if record.result.status == "failed":
+            overall_status = "failed"
+            pipeline_reporter.error("abort", stage=record.stage_name, task=record.task_name, status=record.result.status)
+            break
+        if record.result.status == "not_implemented" and overall_status == "success":
+            overall_status = "partial"
+    record_run_event(
+        resolved.output_root,
+        {
+            "event": "run_end",
+            "run_name": resolved.run_name,
+            "timestamp": run_paths.timestamp,
+            "stages": list(sequence),
+            "status": overall_status,
+        },
+    )
+    pipeline_reporter.info("done", status=overall_status, stages=len(stage_records))
     summary = build_pipeline_run_summary(
         run_name=resolved.run_name,
         timestamp=run_paths.timestamp,
+        status=overall_status,
         stage_records=stage_records,
     )
     write_pipeline_summary(run_paths.pipeline_summary_path, summary)

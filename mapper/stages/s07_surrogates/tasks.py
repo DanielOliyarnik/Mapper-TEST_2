@@ -9,6 +9,9 @@ from .task_selection import build_rollout_request, build_training_request
 
 
 def _train_result(request: StageTaskRequest) -> StageTaskResult:
+    reporter = request.reporter
+    if reporter is not None:
+        reporter.info("train_mode", zone=request.config.get("zone"), task=request.task_name)
     return StageTaskResult(
         status="not_implemented",
         artifact_bundle=ArtifactBundle(),
@@ -18,6 +21,9 @@ def _train_result(request: StageTaskRequest) -> StageTaskResult:
 
 
 def _rollout_result(request: StageTaskRequest, mode: str) -> StageTaskResult:
+    reporter = request.reporter
+    if reporter is not None:
+        reporter.info("rollout_mode", mode=mode, zone=request.config.get("zone"))
     payload = build_rollout_request(request)
     extras = {"mode": mode, **payload}
     return StageTaskResult(

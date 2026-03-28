@@ -9,7 +9,11 @@ DATASET_REGISTRY = {
 }
 
 
-def load_dataset(name: str, cfg: dict[str, Any]):
+def load_dataset(name: str, cfg: dict[str, Any], reporter: Any | None = None):
     if name not in DATASET_REGISTRY:
         raise KeyError(f"Unknown Stage 1 dataset: {name}")
-    return DATASET_REGISTRY[name]()
+    dataset_cls = DATASET_REGISTRY[name]
+    if reporter is not None:
+        reporter.info("resolved dataset", dataset=name, dataset_class=dataset_cls.__name__)
+    _ = cfg
+    return dataset_cls()

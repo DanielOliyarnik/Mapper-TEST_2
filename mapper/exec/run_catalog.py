@@ -31,6 +31,9 @@ def mark_stage_status(
     status: str,
     execution_mode: str,
     manifest_path: str,
+    elapsed_seconds: float | None = None,
+    error_path: str | None = None,
+    status_detail: str = "",
 ) -> Path:
     return append_run_catalog_entry(
         output_root,
@@ -43,6 +46,9 @@ def mark_stage_status(
             "status": status,
             "execution_mode": execution_mode,
             "manifest_path": manifest_path,
+            "elapsed_seconds": elapsed_seconds,
+            "error_path": error_path,
+            "status_detail": status_detail,
         },
     )
 
@@ -51,11 +57,13 @@ def build_pipeline_run_summary(
     *,
     run_name: str,
     timestamp: str,
+    status: str,
     stage_records: list[Mapping[str, Any]],
 ) -> dict[str, Any]:
     return {
         "run_name": run_name,
         "timestamp": timestamp,
+        "status": status,
         "num_stages": len(stage_records),
         "stages": list(stage_records),
     }

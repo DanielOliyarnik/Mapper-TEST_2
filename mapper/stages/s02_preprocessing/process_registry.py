@@ -36,3 +36,11 @@ def load_trainer(name: str):
 
 def get_process_root(name: str) -> Path:
     return Path(__file__).resolve().parent / "processes" / name
+
+
+def describe_process_chain(process_chain: list[str]) -> dict[str, object]:
+    return {
+        "process_chain": list(process_chain),
+        "num_processes": len(process_chain),
+        "available_processes": list_process_names(),
+    }

@@ -8,6 +8,14 @@ def write_gnn_outputs(request: StageTaskRequest) -> dict[str, object]:
 
 
 def run_gnn_training(request: StageTaskRequest) -> StageTaskResult:
+    reporter = request.reporter
+    if reporter is not None:
+        reporter.info(
+            "training_config",
+            epochs=request.config.get("epochs"),
+            lr=request.config.get("lr"),
+            input_count=len(request.input_refs),
+        )
     return StageTaskResult(
         status="not_implemented",
         artifact_bundle=ArtifactBundle(),

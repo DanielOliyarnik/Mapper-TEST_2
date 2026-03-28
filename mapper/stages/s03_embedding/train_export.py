@@ -8,6 +8,15 @@ def export_embeddings(request: StageTaskRequest) -> dict[str, object]:
 
 
 def run_embedding_training(request: StageTaskRequest) -> StageTaskResult:
+    reporter = request.reporter
+    if reporter is not None:
+        reporter.info(
+            "config",
+            dataset=request.dataset_id,
+            input_count=len(request.input_refs),
+            epochs=request.config.get("epochs"),
+            batch_size=request.config.get("batch_size"),
+        )
     return StageTaskResult(
         status="not_implemented",
         artifact_bundle=ArtifactBundle(),

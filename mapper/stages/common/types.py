@@ -62,6 +62,8 @@ class StageTaskRequest:
     config: Mapping[str, Any]
     input_refs: Mapping[str, InputRef]
     upstream_manifest_refs: tuple[Path, ...] = ()
+    reporter: Any | None = field(default=None, repr=False)
+    progress: Any | None = field(default=None, repr=False)
 
 
 @dataclass

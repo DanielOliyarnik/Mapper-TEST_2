@@ -16,6 +16,7 @@ class ResolvedRunConfig:
     requested_stages: tuple[str, ...]
     retrain_stages: tuple[str, ...]
     stage_task_names: dict[str, str]
+    reporting_cfg: dict[str, Any]
     raw_cfg: dict[str, Any]
 
 
@@ -147,6 +148,18 @@ def snapshot_stage_config(cfg: Mapping[str, Any], out_path: Path) -> Path:
     return out_path
 
 
+def resolve_reporting_config(cfg: dict[str, Any]) -> dict[str, Any]:
+    exec_cfg = cfg.get("exec", {})
+    reporting_cfg = dict(exec_cfg.get("reporting", {}))
+    reporting_cfg.setdefault("console", True)
+    reporting_cfg.setdefault("progress", True)
+    reporting_cfg.setdefault("progress_style", "single_line")
+    reporting_cfg.setdefault("progress_every", 10)
+    reporting_cfg.setdefault("progress_min_seconds", 1.0)
+    reporting_cfg.setdefault("show_eta", True)
+    return reporting_cfg
+
+
 def normalize_run_config(
     cfg: dict[str, Any],
     *,
@@ -165,6 +178,7 @@ def normalize_run_config(
         for stage_name in requested_stages
         if stage_defs is not None
     }
+    reporting_cfg = resolve_reporting_config(cfg)
     return ResolvedRunConfig(
         run_name=run_name,
         dataset_id=dataset_id,
@@ -172,5 +186,6 @@ def normalize_run_config(
         requested_stages=requested_stages,
         retrain_stages=retrain_stages,
         stage_task_names=stage_task_names,
+        reporting_cfg=reporting_cfg,
         raw_cfg=cfg,
     )
