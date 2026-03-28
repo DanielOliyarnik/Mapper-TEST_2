@@ -15,5 +15,9 @@ def get_evaluator(name: str) -> Callable[..., Any]:
     return _EVALUATORS[name]
 
 
-def list_evaluators() -> dict[str, Callable[..., Any]]:
-    return dict(_EVALUATORS)
+def load_evaluator(name: str) -> Callable[..., Any]:
+    return get_evaluator(name)
+
+
+def list_evaluators() -> list[str]:
+    return sorted(_EVALUATORS)

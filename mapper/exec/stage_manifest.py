@@ -38,3 +38,11 @@ def write_stage_manifest(
         schema_path=schema_path,
     )
     return write_json(manifest_path, stage_manifest_to_dict(manifest))
+
+
+def read_json(path: Path) -> dict[str, Any]:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def load_stage_manifest(path: Path) -> dict[str, Any]:
+    return read_json(path)
