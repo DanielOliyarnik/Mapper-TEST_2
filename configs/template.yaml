@@ -1,0 +1,13 @@
+{
+  "DATA_SOURCE": {
+    "dataset": "<dataset_name>",
+    "input_path": "<dataset_root>"
+  },
+  "output_root": "project-data",
+  "s01_data": {},
+  "s02_preprocessing": {},
+  "s03_embedding": {},
+  "s04_similarity": {},
+  "s05_gnn": {},
+  "s07_surrogates": {}
+}

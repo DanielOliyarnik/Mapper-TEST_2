@@ -1,0 +1,12 @@
+{
+  "is_control": {
+    "attributes": {
+      "control_terms": ["CMD", "SET"]
+    }
+  },
+  "is_power": {
+    "attributes": {
+      "electric_terms": ["KW", "KWH", "W"]
+    }
+  }
+}
