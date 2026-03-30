@@ -1,4 +1,123 @@
 {
-  "name": "id_rules.schema.json",
-  "status": "scaffold"
+  "type": "object",
+  "required": [
+    "key_normalization",
+    "zone_id",
+    "group_id",
+    "equip_id",
+    "class",
+    "loop_ids",
+    "location",
+    "strictness"
+  ],
+  "properties": {
+    "key_normalization": {
+      "type": "object"
+    },
+    "zone_id": {
+      "type": "object",
+      "required": [
+        "sources",
+        "fallback"
+      ],
+      "properties": {
+        "sources": {
+          "type": "array"
+        },
+        "fallback": {
+          "type": "object"
+        }
+      }
+    },
+    "group_id": {
+      "type": "object",
+      "required": [
+        "derive_from",
+        "policy"
+      ],
+      "properties": {
+        "derive_from": {
+          "type": "string"
+        },
+        "policy": {
+          "type": "string"
+        },
+        "map": {
+          "type": "object"
+        },
+        "regex_map": {
+          "type": "array"
+        },
+        "default": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "fallback_to_zone_id": {
+          "type": "boolean"
+        }
+      }
+    },
+    "equip_id": {
+      "type": "object"
+    },
+    "class": {
+      "type": "object"
+    },
+    "loop_ids": {
+      "type": "object",
+      "required": [
+        "delimiter",
+        "rules",
+        "fallback"
+      ],
+      "properties": {
+        "delimiter": {
+          "type": "string"
+        },
+        "rules": {
+          "type": "array"
+        },
+        "fallback": {
+          "type": "object"
+        }
+      }
+    },
+    "location": {
+      "type": "object",
+      "required": [
+        "default_from",
+        "sources"
+      ],
+      "properties": {
+        "default_from": {
+          "type": "string"
+        },
+        "sources": {
+          "type": "array"
+        }
+      }
+    },
+    "strictness": {
+      "type": "object"
+    },
+    "hierarchy": {
+      "type": "object",
+      "properties": {
+        "default_mode": {
+          "type": "string"
+        },
+        "mode_rules": {
+          "type": "array"
+        },
+        "control_chain": {
+          "type": "object"
+        },
+        "context_chain": {
+          "type": "object"
+        }
+      }
+    }
+  }
 }

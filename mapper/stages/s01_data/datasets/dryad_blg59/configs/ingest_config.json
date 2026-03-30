@@ -1,4 +1,34 @@
 {
-  "name": "ingest_config.json",
-  "status": "scaffold"
+  "building": "DRYAD_BLDG59",
+  "value_dtype": "float32",
+  "drop_cerc": true,
+  "files": [
+    {"path": "raw-data/timeseries/ashp_cw.csv", "time_column": "date", "datetime_format": "%Y-%m-%d %H:%M:%S", "timezone": "UTC", "source_group": "ashp_cw", "drop_columns": ["^Unnamed:"]},
+    {"path": "raw-data/timeseries/ashp_hw.csv", "time_column": "date", "datetime_format": "%Y-%m-%d %H:%M:%S", "timezone": "UTC", "source_group": "ashp_hw", "drop_columns": ["^Unnamed:"]},
+    {"path": "raw-data/timeseries/ashp_meter.csv", "time_column": "date", "datetime_format": "%Y-%m-%d %H:%M:%S", "timezone": "UTC", "source_group": "ashp_meter", "drop_columns": ["^Unnamed:"]},
+    {"path": "raw-data/timeseries/ele.csv", "time_column": "date", "datetime_format": "%Y/%m/%d %H:%M", "timezone": "UTC", "source_group": "electric", "drop_columns": ["^Unnamed:"]},
+    {"path": "raw-data/timeseries/hp_hws_temp.csv", "time_column": "date", "datetime_format": "%Y/%m/%d %H:%M", "timezone": "UTC", "source_group": "hp_hws_temp", "drop_columns": ["^Unnamed:"]},
+    {"path": "raw-data/timeseries/occ.csv", "time_column": "date", "datetime_format": "%Y-%m-%d %H:%M:%S", "timezone": "UTC", "source_group": "occupancy", "drop_columns": ["^Unnamed:"]},
+    {"path": "raw-data/timeseries/rtu_econ_sp.csv", "time_column": "date", "datetime_format": "%Y/%m/%d %H:%M", "timezone": "UTC", "source_group": "rtu_econ_sp", "drop_columns": ["^Unnamed:"]},
+    {"path": "raw-data/timeseries/rtu_fan_spd.csv", "time_column": "date", "datetime_format": "%Y-%m-%d %H:%M:%S", "timezone": "UTC", "source_group": "rtu_fan_spd", "drop_columns": ["^Unnamed:"]},
+    {"path": "raw-data/timeseries/rtu_ma_t.csv", "time_column": "date", "datetime_format": "%Y/%m/%d %H:%M", "timezone": "UTC", "source_group": "rtu_ma_t", "drop_columns": ["^Unnamed:"]},
+    {"path": "raw-data/timeseries/rtu_oa_damper.csv", "time_column": "date", "datetime_format": "%Y/%m/%d %H:%M", "timezone": "UTC", "source_group": "rtu_oa_damper", "drop_columns": ["^Unnamed:"]},
+    {"path": "raw-data/timeseries/rtu_oa_fr.csv", "time_column": "date", "datetime_format": "%Y/%m/%d %H:%M", "timezone": "UTC", "source_group": "rtu_oa_flow", "drop_columns": ["^Unnamed:"]},
+    {"path": "raw-data/timeseries/rtu_oa_t.csv", "time_column": "date", "datetime_format": "%Y/%m/%d %H:%M", "timezone": "UTC", "source_group": "rtu_oa_t", "drop_columns": ["^Unnamed:"]},
+    {"path": "raw-data/timeseries/rtu_plenum_p.csv", "time_column": "date", "datetime_format": "%Y-%m-%d %H:%M:%S", "timezone": "UTC", "source_group": "rtu_plenum_p", "drop_columns": ["^Unnamed:"]},
+    {"path": "raw-data/timeseries/rtu_ra_t.csv", "time_column": "date", "datetime_format": "%Y/%m/%d %H:%M", "timezone": "UTC", "source_group": "rtu_ra_t", "drop_columns": ["^Unnamed:"]},
+    {"path": "raw-data/timeseries/rtu_sa_fr.csv", "time_column": "date", "datetime_format": "%Y-%m-%d %H:%M:%S", "timezone": "UTC", "source_group": "rtu_sa_flow", "drop_columns": ["^Unnamed:"]},
+    {"path": "raw-data/timeseries/rtu_sa_p_sp.csv", "time_column": "date", "datetime_format": "%Y-%m-%d %H:%M:%S", "timezone": "UTC", "source_group": "rtu_sa_p_sp", "drop_columns": ["^Unnamed:"]},
+    {"path": "raw-data/timeseries/rtu_sa_t.csv", "time_column": "date", "datetime_format": "%Y-%m-%d %H:%M:%S", "timezone": "UTC", "source_group": "rtu_sa_t", "drop_columns": ["^Unnamed:"]},
+    {"path": "raw-data/timeseries/rtu_sa_t_sp.csv", "time_column": "date", "datetime_format": "%Y-%m-%d %H:%M:%S", "timezone": "UTC", "source_group": "rtu_sa_t_sp", "drop_columns": ["^Unnamed:"]},
+    {"path": "raw-data/timeseries/site_weather.csv", "time_column": "date", "datetime_format": "%Y-%m-%d %H:%M:%S", "timezone": "UTC", "source_group": "site_weather", "drop_columns": ["^Unnamed:"]},
+    {"path": "raw-data/timeseries/uft_fan_spd.csv", "time_column": "date", "datetime_format": "%Y-%m-%d %H:%M:%S", "timezone": "UTC", "source_group": "uft_fan_spd", "drop_columns": ["^Unnamed:"]},
+    {"path": "raw-data/timeseries/uft_hw_valve.csv", "time_column": "date", "datetime_format": "%Y-%m-%d %H:%M:%S", "timezone": "UTC", "source_group": "uft_hw_valve", "drop_columns": ["^Unnamed:"]},
+    {"path": "raw-data/timeseries/wifi.csv", "time_column": "date", "datetime_format": "%Y/%m/%d %H:%M", "timezone": "UTC", "source_group": "wifi", "drop_columns": ["^Unnamed:"]},
+    {"path": "raw-data/timeseries/zone_co2.csv", "time_column": "date", "datetime_format": "%Y/%m/%d %H:%M", "timezone": "UTC", "source_group": "zone_co2", "drop_columns": ["^Unnamed:"]},
+    {"path": "raw-data/timeseries/zone_temp_exterior.csv", "time_column": "date", "datetime_format": "%Y-%m-%d %H:%M:%S", "timezone": "UTC", "source_group": "zone_temp_exterior", "drop_columns": ["^Unnamed:"]},
+    {"path": "raw-data/timeseries/zone_temp_interior.csv", "time_column": "date", "datetime_format": "%Y-%m-%d %H:%M:%S", "timezone": "UTC", "source_group": "zone_temp_interior", "drop_columns": ["^Unnamed:"]},
+    {"path": "raw-data/timeseries/zone_temp_sp_c.csv", "time_column": "date", "datetime_format": "%Y/%m/%d %H:%M", "timezone": "UTC", "source_group": "zone_temp_sp_c", "drop_columns": ["^Unnamed:"]},
+    {"path": "raw-data/timeseries/zone_temp_sp_h.csv", "time_column": "date", "datetime_format": "%Y/%m/%d %H:%M", "timezone": "UTC", "source_group": "zone_temp_sp_h", "drop_columns": ["^Unnamed:"]}
+  ]
 }

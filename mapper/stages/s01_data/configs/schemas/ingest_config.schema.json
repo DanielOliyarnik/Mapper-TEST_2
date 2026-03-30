@@ -1,4 +1,17 @@
 {
-  "name": "ingest_config.schema.json",
-  "status": "scaffold"
+  "type": "object",
+  "required": [
+    "timeseries_path",
+    "time_column",
+    "timezone",
+    "value_dtype"
+  ],
+  "properties": {
+    "timeseries_path": {"type": "string"},
+    "time_column": {"type": "string"},
+    "datetime_format": {"type": ["string", "null"]},
+    "timezone": {"type": "string"},
+    "drop_column_patterns": {"type": "array", "items": {"type": "string"}},
+    "value_dtype": {"type": "string"}
+  }
 }

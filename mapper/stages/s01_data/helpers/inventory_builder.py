@@ -1,7 +1,31 @@
 from __future__ import annotations
 
-"""Stage 1 shared inventory builder."""
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, Callable
 
-def build_inventory(*args, **kwargs):
-    raise NotImplementedError("inventory_builder.py:build_inventory is not implemented in the first scaffold")
+from .utils import normalize_col
 
+if TYPE_CHECKING:
+    import pandas as pd
+
+
+def build_inventory(
+    read_fn: Callable[[Path, dict[str, Any]], "pd.DataFrame"],
+    *,
+    input_dir: Path,
+    cfg: dict[str, Any],
+    out_path: Path,
+) -> "pd.DataFrame":
+    inventory_df = read_fn(input_dir, cfg)
+    try:
+        import pandas as pd  # noqa: F401
+    except ModuleNotFoundError:
+        pass
+    if not hasattr(inventory_df, "columns"):
+        raise TypeError("inventory_reader must return a DataFrame-like object")
+    if "key" not in inventory_df.columns:
+        raise ValueError("inventory_reader must return a 'key' column")
+    normalize_col(inventory_df, "key")
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    inventory_df.to_feather(out_path)
+    return inventory_df

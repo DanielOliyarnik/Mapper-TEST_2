@@ -1,4 +1,11 @@
 {
-  "name": "metadata_config.schema.json",
-  "status": "scaffold"
+  "type": "object",
+  "required": [
+    "authoritative_semantics",
+    "allowed_fields"
+  ],
+  "properties": {
+    "authoritative_semantics": {"type": "boolean"},
+    "allowed_fields": {"type": "array", "items": {"type": "string"}}
+  }
 }

@@ -1,4 +1,110 @@
 {
-  "name": "id_rules.template.json",
-  "status": "scaffold"
+  "key_normalization": {
+    "strip": true,
+    "case": "preserve"
+  },
+  "location": {
+    "default_from": "zone_id",
+    "sources": [
+      {
+        "type": "column",
+        "column": "location_hint"
+      }
+    ]
+  },
+  "zone_id": {
+    "sources": [
+      {
+        "type": "column",
+        "column": "location_seed"
+      },
+      {
+        "type": "column",
+        "column": "zone_hint"
+      },
+      {
+        "type": "regex_template",
+        "column": "key",
+        "pattern": "_(?P<rid>[A-Za-z0-9]+)$",
+        "template": "ZONE_{rid}"
+      }
+    ],
+    "fallback": {
+      "mode": "constant",
+      "value": "GLOBAL"
+    }
+  },
+  "group_id": {
+    "derive_from": "zone_id",
+    "policy": "regex_map",
+    "regex_map": [
+      {
+        "pattern": "^ZONE_",
+        "value": "DEFAULT_GROUP"
+      }
+    ],
+    "default": "DEFAULT_GROUP",
+    "fallback_to_zone_id": true
+  },
+  "equip_id": {
+    "enabled": true,
+    "sources": []
+  },
+  "class": {
+    "enabled": true,
+    "delimiter": "::",
+    "components": [
+      "equip_id",
+      "zone_id"
+    ],
+    "extra_tags": []
+  },
+  "loop_ids": {
+    "delimiter": "|",
+    "rules": [
+      {
+        "match_any": [
+          {
+            "type": "regex",
+            "column": "key",
+            "pattern": "^POINT_"
+          }
+        ],
+        "set": "loop_a",
+        "mode": "append",
+        "zone_allowlist": [],
+        "zone_denylist": []
+      }
+    ],
+    "fallback": {
+      "mode": "none",
+      "exclude_zone_ids": []
+    }
+  },
+  "strictness": {
+    "missing_zone_id": "fail"
+  },
+  "hierarchy": {
+    "joiner": " > ",
+    "list_delimiter": "|",
+    "default_mode": "control_chain",
+    "mode_rules": [],
+    "control_chain": {
+      "loop_prefix": "loop:",
+      "setpoint_prefix": "setpoint:",
+      "setpoint_anchor_prefix": "setpoint_anchor:",
+      "actuator_prefix": "actuator:",
+      "actuator_anchor_prefix": "actuator_anchor:",
+      "sensor_prefix": "sensor:",
+      "unknown_setpoint": "UNMAPPED_SETPOINT",
+      "unknown_actuator": "UNMAPPED_ACTUATOR"
+    },
+    "context_chain": {
+      "include_loop": true,
+      "include_role": true,
+      "loop_prefix": "loop:",
+      "role_prefix": "role:",
+      "point_prefix": "point:"
+    }
+  }
 }

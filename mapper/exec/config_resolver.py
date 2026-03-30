@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import json
+import yaml
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 
@@ -51,14 +52,16 @@ def load_run_config(path: str | Path) -> dict[str, Any]:
     text = cfg_path.read_text(encoding="utf-8").strip()
     if not text:
         return {}
-    if cfg_path.suffix.lower() not in {".json", ".yaml", ".yml"}:
+    suffix = cfg_path.suffix.lower()
+    if suffix not in {".json", ".yaml", ".yml"}:
         raise TypeError(f"Unsupported config extension for {cfg_path}")
-    try:
-        loaded = json.loads(text)
-    except json.JSONDecodeError as exc:
-        raise NotImplementedError(
-            f"Only JSON-compatible config syntax is supported in the current exec layer: {cfg_path}"
-        ) from exc
+    if suffix == ".json":
+        try:
+            loaded = json.loads(text)
+        except json.JSONDecodeError as exc:
+            raise ValueError(f"Invalid JSON config: {cfg_path}") from exc
+    else:
+        loaded = yaml.safe_load(text)
     if not isinstance(loaded, dict):
         raise TypeError(f"Config root must be an object: {cfg_path}")
     return loaded
@@ -90,55 +93,15 @@ def resolve_stage_task_name(cfg: dict[str, Any], stage_name: str, stage_def: Any
     return task_name
 
 
-def resolve_stage2_process_config(dataset_id: str, process_name: str, config_name: str) -> Path:
-    process_root = Path(__file__).resolve().parents[1] / "stages" / "s02_preprocessing" / "processes" / process_name / "configs"
-    stem = config_name.removesuffix(".json")
-    preferred = process_root / f"{dataset_id}_{stem}.json"
-    if preferred.exists():
-        return preferred
-    fallback = process_root / f"{stem}.json"
-    if fallback.exists():
-        return fallback
-    raise FileNotFoundError(f"Stage 2 process config not found for {process_name}: {config_name}")
-
-
-def resolve_stage4_schema(dataset_id: str, schema_name: str) -> Path:
-    schema_root = Path(__file__).resolve().parents[1] / "stages" / "s04_similarity" / "schemas"
-    stem = schema_name.removesuffix(".json")
-    candidates = (
-        schema_root / f"{stem}.json",
-        schema_root / f"{dataset_id}__{stem}.json",
-        schema_root / f"{dataset_id}_{stem}.json",
-    )
-    for candidate in candidates:
-        if candidate.exists():
-            return candidate
-    raise FileNotFoundError(f"Stage 4 schema not found for {dataset_id}: {schema_name}")
-
-
 def resolve_stage_task_config(cfg: dict[str, Any], stage_name: str, task_name: str) -> dict[str, Any]:
-    stage_cfg = dict(cfg.get(stage_name, {}))
-    data_source = cfg.get("DATA_SOURCE", {})
-    dataset_id = str(stage_cfg.get("dataset") or data_source.get("dataset") or cfg.get("dataset") or "unknown_dataset")
-    stage_cfg.setdefault("dataset", dataset_id)
-    stage_cfg.setdefault("task_name", task_name)
-    if stage_name == "s02_preprocessing":
-        process_chain = [str(item) for item in stage_cfg.get("process_chain", [])]
-        resolved_process_configs: dict[str, str] = {}
-        for process_name in process_chain:
-            config_name = str(stage_cfg.get(f"{process_name}_config", process_name))
-            try:
-                resolved_process_configs[process_name] = str(resolve_stage2_process_config(dataset_id, process_name, config_name))
-            except FileNotFoundError:
-                continue
-        if resolved_process_configs:
-            stage_cfg["resolved_process_configs"] = resolved_process_configs
-    if stage_name == "s04_similarity":
-        schema_name = str(stage_cfg.get("schema_name") or stage_cfg.get("schema") or "template")
-        try:
-            stage_cfg["schema_path"] = str(resolve_stage4_schema(dataset_id, schema_name))
-        except FileNotFoundError:
-            pass
+    data_source = dict(cfg.get("DATA_SOURCE", {}))
+    stage_cfg = dict(data_source)
+    stage_cfg.update(dict(cfg.get(stage_name, {})))
+    if "dataset" not in stage_cfg and "dataset" in cfg:
+        stage_cfg["dataset"] = cfg["dataset"]
+    if "dataset" not in stage_cfg:
+        raise ValueError(f"Run config must define dataset for stage {stage_name}")
+    stage_cfg["task_name"] = task_name
     return stage_cfg
 
 

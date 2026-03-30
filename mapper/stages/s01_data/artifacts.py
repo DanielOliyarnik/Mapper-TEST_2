@@ -9,6 +9,7 @@ BUILD_CONTRACT = TaskArtifactContract(
         ArtifactSpec("inventory", "file", True, False, "inventory.feather"),
         ArtifactSpec("raw_store", "file", True, False, "raw_store.h5"),
         ArtifactSpec("metadata", "file", True, False, "metadata.feather"),
+        ArtifactSpec("otherdata", "file", True, False, "otherdata.feather"),
         ArtifactSpec("brickdata", "file", True, False, "brickdata.feather"),
         ArtifactSpec("ledger", "file", True, False, "ledger.feather"),
     ),

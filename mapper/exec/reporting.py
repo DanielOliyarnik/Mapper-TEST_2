@@ -119,7 +119,9 @@ class StageReporter:
         self.error_path = error_path
         self.console = console
 
-    def _console_prefix(self, level: str, step_name: str | None = None) -> str:
+    def _console_prefix(self, level: str, step_name: str | None = None, compact: bool = False) -> str:
+        if compact and step_name and level == "info":
+            return f"[{step_name}]"
         prefix = f"[stage][{self.stage_name}]"
         if step_name:
             prefix += f"[{step_name}]"
@@ -129,7 +131,16 @@ class StageReporter:
             prefix += "[error]"
         return prefix
 
-    def _emit(self, level: str, message: str, *, step_name: str | None = None, **fields: Any) -> None:
+    def _emit(
+        self,
+        level: str,
+        message: str,
+        *,
+        step_name: str | None = None,
+        compact: bool = False,
+        console: bool | None = None,
+        **fields: Any,
+    ) -> None:
         payload = StageEvent(
             timestamp=_stamp(),
             level=level,
@@ -141,10 +152,10 @@ class StageReporter:
             fields=_normalize_fields(fields),
         )
         _write_jsonl(self.event_log_path, asdict(payload))
-        if self.console:
+        if self.console if console is None else console:
             kv = " ".join(f"{key}={value}" for key, value in payload.fields.items())
             suffix = f" {kv}" if kv else ""
-            print(f"{self._console_prefix(level, step_name)} {message}{suffix}")
+            print(f"{self._console_prefix(level, step_name, compact=compact)} {message}{suffix}")
 
     def info(self, message: str, **fields: Any) -> None:
         self._emit("info", message, **fields)
@@ -155,22 +166,22 @@ class StageReporter:
     def error(self, message: str, **fields: Any) -> None:
         self._emit("error", message, **fields)
 
-    def step_start(self, step_name: str, **fields: Any) -> None:
-        self._emit("info", "start", step_name=step_name, **fields)
+    def step_start(self, step_name: str, *, compact: bool = False, **fields: Any) -> None:
+        self._emit("info", "start", step_name=step_name, compact=compact, **fields)
 
-    def step_done(self, step_name: str, **fields: Any) -> None:
-        self._emit("info", "done", step_name=step_name, **fields)
+    def step_done(self, step_name: str, *, compact: bool = False, **fields: Any) -> None:
+        self._emit("info", "done", step_name=step_name, compact=compact, **fields)
 
-    def step_skip(self, step_name: str, **fields: Any) -> None:
-        self._emit("info", "skip", step_name=step_name, **fields)
+    def step_skip(self, step_name: str, *, compact: bool = False, **fields: Any) -> None:
+        self._emit("info", "skip", step_name=step_name, compact=compact, **fields)
 
     def artifact_written(self, key: str, path: Path, **fields: Any) -> None:
         payload = {"artifact_key": key, "path": path, **fields}
-        self._emit("info", "artifact_written", **payload)
+        self._emit("info", "artifact_written", console=False, **payload)
 
     def metric(self, name: str, value: Any, **fields: Any) -> None:
         payload = {"metric": name, "value": value, **fields}
-        self._emit("info", "metric", **payload)
+        self._emit("info", "metric", console=False, **payload)
 
     def exception(self, exc: BaseException, **fields: Any) -> Path:
         record = StageErrorRecord(

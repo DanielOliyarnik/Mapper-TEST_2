@@ -1,4 +1,23 @@
 {
-  "name": "brickdata_config.schema.json",
-  "status": "scaffold"
+  "type": "object",
+  "required": [
+    "ttl_path",
+    "predicates",
+    "role_overrides",
+    "role_rules",
+    "default_role",
+    "unit_candidates_tokens"
+  ],
+  "properties": {
+    "ttl_path": {"type": "string"},
+    "namespaces": {"type": "object"},
+    "predicates": {"type": "object"},
+    "role_overrides": {"type": "array"},
+    "role_rules": {"type": "array"},
+    "class_roles": {"type": "object"},
+    "allow_class_setpoint": {"type": "boolean"},
+    "default_role": {"type": "string"},
+    "unit_candidates_overrides": {"type": "array"},
+    "unit_candidates_tokens": {"type": "object"}
+  }
 }

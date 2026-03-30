@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-"""Stage 1 shared parsing helpers."""
+"""
+Legacy Stage 1 parser shim.
 
-def parse_source_path(*args, **kwargs):
-    raise NotImplementedError("parser.py:parse_source_path is not implemented in the first scaffold")
-
+Dataset-specific parsing should stay in dataset packages. This module remains as a
+placeholder to avoid making cross-boundary parser inference a core Stage 1 pattern.
+"""

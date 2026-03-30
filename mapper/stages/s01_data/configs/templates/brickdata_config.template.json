@@ -1,4 +1,40 @@
 {
-  "name": "brickdata_config.template.json",
-  "status": "scaffold"
+  "ttl_path": "raw-data/brickdata/<FILE>.ttl",
+  "namespaces": {
+    "brick": "https://brickschema.org/schema/Brick#"
+  },
+  "predicates": {
+    "has_point": [
+      "hasPoint"
+    ],
+    "has_part": [
+      "hasPart"
+    ],
+    "feeds": [
+      "feeds"
+    ]
+  },
+  "role_overrides": [],
+  "role_rules": [
+    {
+      "source": "brick_class_local",
+      "pattern": "SETPOINT",
+      "role": "setpoint"
+    },
+    {
+      "source": "brick_class_local",
+      "pattern": "COMMAND",
+      "role": "actuator"
+    },
+    {
+      "source": "brick_class_local",
+      "pattern": "SENSOR|STATUS",
+      "role": "sensor"
+    }
+  ],
+  "class_roles": {},
+  "allow_class_setpoint": true,
+  "default_role": "sensor",
+  "unit_candidates_overrides": [],
+  "unit_candidates_tokens": {}
 }

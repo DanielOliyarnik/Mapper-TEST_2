@@ -1,4 +1,132 @@
 {
-  "name": "id_rules.json",
-  "status": "scaffold"
+  "key_normalization": {
+    "strip": true,
+    "case": "preserve"
+  },
+  "location": {
+    "default_from": "zone_id",
+    "sources": [
+      {"type": "regex_template", "column": "key", "pattern": "^(zone_[0-9]+)_", "template": "{capture}"},
+      {"type": "regex_template", "column": "key", "pattern": "^rtu_(?P<capture>[0-9]+)_", "template": "RTU_{capture}"},
+      {"type": "regex_template", "column": "key", "pattern": "^aru_(?P<capture>[0-9]+)_", "template": "ARU_{capture}"},
+      {"type": "regex_template", "column": "key", "pattern": "^(hp)_", "template": "HP"},
+      {"type": "regex_template", "column": "key", "pattern": "^(ashp)_", "template": "ASHP"},
+      {"type": "column", "column": "location_hint"}
+    ]
+  },
+  "zone_id": {
+    "sources": [
+      {"type": "regex_template", "column": "key", "pattern": "^(zone_[0-9]+)_", "template": "{capture}"},
+      {"type": "regex_template", "column": "key", "pattern": "^rtu_(?P<capture>[0-9]+)_", "template": "RTU_{capture}"},
+      {"type": "regex_template", "column": "key", "pattern": "^aru_(?P<capture>[0-9]+)_", "template": "ARU_{capture}"},
+      {"type": "regex_template", "column": "key", "pattern": "^(hp)_", "template": "HP"},
+      {"type": "regex_template", "column": "key", "pattern": "^(ashp)_", "template": "ASHP"},
+      {"type": "column", "column": "zone_hint"}
+    ],
+    "fallback": {
+      "mode": "constant",
+      "value": "GLOBAL"
+    }
+  },
+  "group_id": {
+    "derive_from": "zone_id",
+    "policy": "regex_map",
+    "regex_map": [
+      {"pattern": "^zone_[0-9]+$", "value": "ZONE"},
+      {"pattern": "^(?:RTU_|ARU_|HP$|ASHP$)", "value": "SYSTEM"},
+      {"pattern": ".*", "value": "GLOBAL"}
+    ],
+    "default": "GLOBAL",
+    "fallback_to_zone_id": false
+  },
+  "equip_id": {
+    "enabled": true,
+    "sources": [
+      {"type": "regex_template", "column": "key", "pattern": "^rtu_(?P<capture>[0-9]+)_", "template": "RTU_{capture}"},
+      {"type": "regex_template", "column": "key", "pattern": "^aru_(?P<capture>[0-9]+)_", "template": "ARU_{capture}"},
+      {"type": "regex_template", "column": "key", "pattern": "^(hp)_", "template": "HP"},
+      {"type": "regex_template", "column": "key", "pattern": "^(ashp)_", "template": "ASHP"},
+      {"type": "column", "column": "equip_hint"},
+      {"type": "column", "column": "owner_id"}
+    ]
+  },
+  "class": {
+    "enabled": true,
+    "delimiter": "::",
+    "components": ["equip_id", "zone_id"],
+    "extra_tags": [
+      {"type": "column", "column": "brick_class_local"},
+      {"type": "column", "column": "source_group"}
+    ]
+  },
+  "loop_ids": {
+    "delimiter": "|",
+    "rules": [
+      {
+        "match_any": [
+          {"type": "regex", "column": "key", "pattern": "_heating_sp$|_hw_valve$|_hwr_|_hws_"}
+        ],
+        "set": "heat",
+        "mode": "append"
+      },
+      {
+        "match_any": [
+          {"type": "regex", "column": "key", "pattern": "_cooling_sp$|_cwr_|_cws_"}
+        ],
+        "set": "cool",
+        "mode": "append"
+      },
+      {
+        "match_any": [
+          {"type": "regex", "column": "key", "pattern": "^zone_[0-9]+_(temp|fan_spd|co2)$"}
+        ],
+        "set": "heat|cool",
+        "mode": "append"
+      },
+      {
+        "match_any": [
+          {"type": "regex", "column": "key", "pattern": "^(air_temp|dew_point|relative_humidity|solar_radiation|occ_|wifi_|mels_|lig_|hvac_)"}
+        ],
+        "set": null,
+        "mode": "clear"
+      }
+    ],
+    "fallback": {
+      "mode": "none",
+      "exclude_zone_ids": ["GLOBAL"]
+    }
+  },
+  "strictness": {
+    "missing_zone_id": "warn_and_global"
+  },
+  "hierarchy": {
+    "joiner": " > ",
+    "list_delimiter": "|",
+    "default_mode": "context_chain",
+    "mode_rules": [
+      {"zone_pattern": "^zone_[0-9]+$", "mode": "control_chain"},
+      {"zone_pattern": "^(?:RTU_|ARU_|HP$|ASHP$)", "mode": "context_chain"},
+      {"zone_pattern": "^GLOBAL$", "mode": "context_chain"}
+    ],
+    "control_chain": {
+      "loop_prefix": "loop:",
+      "setpoint_prefix": "setpoint:",
+      "setpoint_anchor_prefix": "setpoint_anchor:",
+      "actuator_prefix": "actuator:",
+      "actuator_anchor_prefix": "actuator_anchor:",
+      "sensor_anchor_prefix": "sensor_anchor:",
+      "sensor_prefix": "sensor:",
+      "unknown_loop": "UNMAPPED_LOOP",
+      "unknown_setpoint": "UNMAPPED_SETPOINT",
+      "unknown_actuator": "UNMAPPED_ACTUATOR",
+      "unknown_sensor": "UNMAPPED_SENSOR"
+    },
+    "context_chain": {
+      "include_loop": true,
+      "include_role": true,
+      "loop_prefix": "loop:",
+      "role_prefix": "role:",
+      "point_prefix": "point:"
+    }
+  }
 }

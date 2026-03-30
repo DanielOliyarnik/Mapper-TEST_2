@@ -1,4 +1,287 @@
 {
-  "name": "STANDARD_OUTPUT",
-  "status": "scaffold"
+    "fields_required": [
+        "label",
+        "role",
+        "hierarchy",
+        "location",
+        {"unit": ["unit", "unit_candidates"]}
+    ],
+    "merge_precedence": {
+        "label":            ["brick", "meta"],
+        "role":             ["brick", "meta"],
+        "location":         ["brick", "meta"],
+        "unit":             ["brick", "meta"],
+        "unit_candidates":  ["meta", "brick"]
+    },
+    "hierarchy": {
+        "source_order": ["location", "label", "brick_uri"],
+        "joiner": " > ",
+
+        "parent": [
+            "\\bAHU[-_ ]?[A-Za-z0-9]+\\b"
+        ],
+        "child": [
+            "\\bVAV[-_ ]?[A-Za-z0-9]+\\b"
+        ]
+    },
+    
+    "otherdata_config": {
+        "units_map": {
+            "DEGC":             "DEGC",
+            "°C":               "DEGC",
+            "C":                "DEGC",    
+            "CELSIUS":          "DEGC",
+            "DEG C":            "DEGC",
+            "DEG-C":            "DEGC",
+            "DEGREE C":         "DEGC",
+            "DEGREES C":        "DEGC",
+            "degC":             "DEGC",
+            "c":                "DEGC",
+            "celsius":          "DEGC",
+            "DEGREECELSIUS":    "DEGC",
+            "DEGREE_CELSIUS":   "DEGC",
+            "DEGCELSIUS":       "DEGC",
+            "DEGREESCELSIUS":   "DEGC",
+
+            "DEGF":             "DEGF",
+            "°F":               "DEGF",
+            "F":                "DEGF",
+            "FAHRENHEIT":       "DEGF",
+            "DEG F":            "DEGF",
+            "DEG-F":            "DEGF",
+            "DEGREE F":         "DEGF",
+            "DEGREES F":        "DEGF",
+            "degF":             "DEGF",
+            "f":                "DEGF",
+            "fahrenheit":       "DEGF",
+            "DEGREEFAHRENHEIT": "DEGF",
+            "DEGREE_FAHRENHEIT":"DEGF",
+
+            "CFM":                  "CFM",
+            "CUBIC FEET PER MINUTE":"CFM",
+            "cfm":                  "CFM",
+            "CUBICFEETPERMINUTE":   "CFM",
+
+            "L/S":              "L/S",
+            "LPS":              "L/S",
+            "LITERS/SECOND":    "L/S",
+            "LITRES/SECOND":    "L/S",
+            "L/SEC":            "L/S",
+            "l/s":              "L/S",
+            "lps":              "L/S",
+            "LITERPERSECOND":   "L/S",
+            "LITREPERSECOND":   "L/S",
+
+            "M3/H":                 "M3/H",
+            "M³/H":                 "M3/H",
+            "CUBIC METERS PER HOUR":"M3/H",
+            "CUBIC METRES PER HOUR":"M3/H",
+            "m3/h":                 "M3/H",
+            "CUBICMETERPERHOUR":    "M3/H",
+            "CUBICMETREPERHOUR":    "M3/H",
+            "M3H":                  "M3/H",
+
+            "GPM":                  "GPM",
+            "GAL/MIN":              "GPM",
+            "GALLONS PER MINUTE":   "GPM",
+            "gpm":                  "GPM",
+            "GALLONSPERMINUTE":     "GPM",
+
+            "PA":       "PA",
+            "PASCAL":   "PA",
+            "PASCALS":  "PA",
+            "pa":       "PA",
+
+            "KPA":          "KPA",
+            "KILO PASCAL":  "KPA",
+            "KILOPASCAL":   "KPA",
+            "kpa":          "KPA",
+
+            "PSI":  "PSI",
+            "psi":  "PSI",
+            "POUND-FORCE PER SQUARE INCH":  "PSI",
+            "POUNDFORCEPERSQUAREINCH":      "PSI",
+
+            "INH2O":        "INH2O",
+            "IN H2O":       "INH2O",
+            "INWC":         "INH2O",
+            "IN. W.C.":     "INH2O",
+            "IN WC":        "INH2O",
+            "inH2O":        "INH2O",
+            "in. wc":       "INH2O",
+            "INCHOFWATER":  "INH2O",
+
+            "KW":       "KW",
+            "KILOWATT": "KW",
+            "KILO WATT":"KW",
+            "kw":       "KW",
+
+            "KWH":              "KWH",
+            "KILOWATT HOUR":    "KWH",
+            "KILO WATT HOUR":   "KWH",
+            "kwh":              "KWH",
+            "KILOWATTHOUR":     "KWH",
+
+            "MWH":          "MWH",
+            "MEGAWATT HOUR":"MWH",
+            "mwh":          "MWH",
+            "MEGAWATTHOUR": "MWH",
+
+            "FT^2":         "FT^2",
+            "FT2":          "FT^2",
+            "SQ FT":        "FT^2",
+            "SQFT":         "FT^2",
+            "SQUARE FEET":  "FT^2",
+            "ft^2":         "FT^2",
+            "ft2":          "FT^2",
+            "sqft":         "FT^2",
+            "SQUAREFOOT":   "FT^2",
+
+            "M^2":          "M^2",
+            "M2":           "M^2",
+            "SQ M":         "M^2",
+            "SQM":          "M^2",
+            "SQUARE METERS":"M^2",
+            "SQUARE METRES":"M^2",
+            "m^2":          "M^2",
+            "m2":           "M^2",
+            "sqm":          "M^2",
+            "SQUAREMETER":  "M^2",
+            "SQUAREMETRE":  "M^2",
+
+            "%":            "%",
+            "PERCENT":      "%",
+            "percent":      "%",
+            "PCT":          "%",
+            "PERCENTAGE":   "%",
+
+            "STATE":    "STATE",
+            "ON/OFF":   "STATE",
+            "BINARY":   "STATE",
+            "state":    "STATE",
+            "ONOFF":    "STATE"
+        },
+
+        "unit_candidates": {
+            "TEMP": [
+                "DEGC", 
+                "DEGF"
+            ],
+            "TEMPERATURE": [
+                "DEGC", 
+                "DEGF"
+            ],
+            "RH": [
+                "%"
+            ],
+            "HUMID": [
+                "%"
+            ],
+            "POSITION": [
+                "%"
+            ],
+            "VALVE": [
+                "%"
+            ],
+            "DAMPER": [
+                "%"
+            ],
+            "SPEED": [
+                "%"
+            ],
+            "STATIC PRESSURE": [
+                "INH2O", 
+                "PA", 
+                "KPA", 
+                "PSI"
+            ],
+            "DIFFERENTIAL PRESSURE": [
+                "PA", 
+                "KPA", 
+                "INH2O", 
+                "PSI"
+            ],
+            "PRESSURE": [
+                "PA", 
+                "KPA", 
+                "PSI", 
+                "INH2O"
+            ],
+            "AIR FLOW": [
+                "CFM", 
+                "L/S", 
+                "M3/H"
+            ],
+            "WATER FLOW": [
+                "GPM", 
+                "L/S", 
+                "M3/H"
+            ],
+            "FLOW": [
+                "GPM", 
+                "L/S", 
+                "M3/H"
+            ],
+            "POWER": [
+                "KW"
+            ],
+            "ENERGY": [
+                "KWH", 
+                "MWH"
+            ],
+            "AREA": [
+                "FT^2", 
+                "M^2"
+            ],
+            "FLOOR AREA": [
+                "FT^2", 
+                "M^2"
+            ]
+        },
+
+        "unit_tests": {
+            "DEGC": { "range": [-40, 60] },
+            "DEGF": { "range": [-40, 140] },
+            "PA":   { "range": [0, 5000] },
+            "KPA":  { "range": [0, 50] },
+            "INH2O":{ "range": [0, 10] },
+            "PSI":  { "range": [0, 200] },
+            "CFM":  { "range": [0, 50000] },
+            "GPM":  { "range": [0, 20000] },
+            "L/S":  { "range": [0, 5000] },
+            "M3/H": { "range": [0, 200000] },
+            "KW":   { "range": [0, 5000] },
+            "KWH":  { "range": [0, 1e8] },
+            "MWH":  { "range": [0, 1e6] },
+            "FT^2": { "range": [0, 1e7] },
+            "M^2":  { "range": [0, 1e6] },
+            "%":    { "range": [0, 100] },
+            "STATE":{ "range": [0, 1] },
+            "BOOL": { "range": [0, 1] }
+        },
+
+        "class_roles": {
+            "brick:Temperature_Sensor": "sensor",
+            "brick:Humidity_Sensor":    "sensor",
+            "brick:Pressure_Sensor":    "sensor",
+            "brick:Air_Flow_Sensor":    "sensor",
+            "brick:Water_Flow_Sensor":  "sensor",
+            "brick:Power_Sensor":       "sensor",
+            "brick:Energy_Sensor":      "sensor",
+
+            "brick:Damper_Position_Command":"actuator",
+            "brick:Valve_Command":          "actuator",
+            "brick:Fan_Speed_Command":      "actuator",
+            "brick:Start_Stop_Command":     "actuator",
+            "brick:Cooling_Command":        "actuator",
+            "brick:Heating_Command":        "actuator",
+
+            "brick:Cooling_Temperature_Setpoint":   "setpoint",
+            "brick:Heating_Temperature_Setpoint":   "setpoint",
+            "brick:Air_Flow_Setpoint":              "setpoint",
+            "brick:Pressure_Setpoint":              "setpoint",
+
+            "brick:Mode":   "sensor"
+        }
+    }
 }

@@ -1,4 +1,52 @@
 {
-  "name": "metadata_config.json",
-  "status": "scaffold"
+  "authoritative_semantics": false,
+  "allowed_fields": [
+    "key",
+    "label",
+    "role",
+    "location",
+    "unit",
+    "unit_candidates",
+    "source_file",
+    "source_group",
+    "source_unit_rule"
+  ],
+  "drop_key_patterns": [
+    "^cerc_templogger_",
+    "^zone_cerc_",
+    "^Unnamed:"
+  ],
+  "source_unit_rules": {
+    "ashp_cw": {"default_candidates": ["DEGF", "GPM"], "exact_units": {"_temp$": "DEGF", "_fr_gpm$": "GPM"}},
+    "ashp_hw": {"default_candidates": ["DEGF", "GPM"], "exact_units": {"_temp$": "DEGF", "_fr_gpm$": "GPM"}},
+    "ashp_meter": {"default_candidates": ["MBTUH"], "exact_units": {"_power_mbtuph$": "MBTUH"}},
+    "electric": {"default_candidates": ["KW"], "exact_units": {".*": "KW"}},
+    "hp_hws_temp": {"default_candidates": ["DEGF"], "exact_units": {".*": "DEGF"}},
+    "occupancy": {"default_candidates": ["COUNT"], "exact_units": {".*": "COUNT"}},
+    "wifi": {"default_candidates": ["COUNT"], "exact_units": {".*": "COUNT"}},
+    "site_weather": {"default_candidates": ["DEGC", "%", "W/M2"], "exact_units": {"^air_temp_": "DEGC", "^dew_point_": "DEGC", "^relative_humidity_": "%", "^solar_radiation_": "W/M2"}},
+    "rtu_econ_sp": {"default_candidates": ["DEGF"], "exact_units": {".*": "DEGF"}},
+    "rtu_fan_spd": {"default_candidates": ["%"], "exact_units": {".*spd.*": "%"}},
+    "rtu_ma_t": {"default_candidates": ["DEGF"], "exact_units": {".*": "DEGF"}},
+    "rtu_oa_damper": {"default_candidates": ["%"], "exact_units": {".*": "%"}},
+    "rtu_oa_flow": {"default_candidates": ["CFM"], "exact_units": {".*": "CFM"}},
+    "rtu_oa_t": {"default_candidates": ["DEGF"], "exact_units": {".*": "DEGF"}},
+    "rtu_plenum_p": {"default_candidates": ["INH2O", "PA"], "exact_units": {".*": "INH2O"}},
+    "rtu_ra_t": {"default_candidates": ["DEGF"], "exact_units": {".*": "DEGF"}},
+    "rtu_sa_flow": {"default_candidates": ["CFM"], "exact_units": {".*": "CFM"}},
+    "rtu_sa_p_sp": {"default_candidates": ["INH2O", "PA"], "exact_units": {".*": "INH2O"}},
+    "rtu_sa_t": {"default_candidates": ["DEGF"], "exact_units": {".*": "DEGF"}},
+    "rtu_sa_t_sp": {"default_candidates": ["DEGF"], "exact_units": {".*": "DEGF"}},
+    "uft_fan_spd": {"default_candidates": ["%"], "exact_units": {".*": "%"}},
+    "uft_hw_valve": {"default_candidates": ["%"], "exact_units": {".*": "%"}},
+    "zone_co2": {"default_candidates": ["PPM"], "exact_units": {".*": "PPM"}},
+    "zone_temp_exterior": {"default_candidates": ["DEGF"], "exact_units": {".*": "DEGF"}},
+    "zone_temp_sp_c": {"default_candidates": ["DEGF"], "exact_units": {".*": "DEGF"}},
+    "zone_temp_sp_h": {"default_candidates": ["DEGF"], "exact_units": {".*": "DEGF"}}
+  },
+  "role_rules": {
+    "setpoint_patterns": ["_cooling_sp$", "_heating_sp$", "_econ_stpt_", "_pa_static_stpt_", "_sat_sp_", "_sat_sp", "_stpt_"],
+    "actuator_patterns": ["_hw_valve$", "_oadmpr_pct$", "_fan_spd$"],
+    "sensor_patterns": ["_temp$", "_co2$", "_flow", "plenum_press", "_fbk_"]
+  }
 }
