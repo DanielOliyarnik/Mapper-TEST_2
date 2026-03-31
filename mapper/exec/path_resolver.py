@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 from pathlib import Path
 
@@ -41,7 +41,7 @@ class StagePaths:
 
 
 def resolve_run_paths(output_root: Path, run_name: str, timestamp: str | None = None, *, create: bool = True) -> RunPaths:
-    stamp = timestamp or datetime.now().strftime("%Y%m%d_%H%M%S")
+    stamp = timestamp or datetime.now(timezone.utc).strftime("%Y-%m-%d_T%H-%M-%SZ")
     root = output_root / run_name / stamp
     run_paths = RunPaths(
         root=root,
