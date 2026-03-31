@@ -455,6 +455,3 @@ class Dataset(DatasetBase):
             out_path=out_path,
             validate=validate,
         )
-
-
-DryadBlg59Dataset = Dataset
