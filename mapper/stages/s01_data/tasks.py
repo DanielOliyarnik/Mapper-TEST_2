@@ -9,9 +9,11 @@ from .dataset_loader import load_dataset
 
 
 def _resolve_input_dir(request: StageTaskRequest) -> Path:
-    configured = str(request.config.get("input_root") or request.config.get("input_path") or "").strip()
+    if "input_root" not in request.config:
+        raise ValueError("Stage 1 requires input_root in the resolved stage config")
+    configured = str(request.config["input_root"]).strip()
     if not configured:
-        raise ValueError("Stage 1 requires input_path or input_root in the resolved stage config")
+        raise ValueError("Stage 1 requires input_root in the resolved stage config")
     path = Path(configured)
     return path if path.is_absolute() else (Path.cwd() / path)
 
@@ -21,8 +23,8 @@ def _build_output_paths(data_dir: Path) -> dict[str, Path]:
         "inventory": data_dir / "inventory.feather",
         "raw_store": data_dir / "raw_store.h5",
         "metadata": data_dir / "metadata.feather",
-        "otherdata": data_dir / "otherdata.feather",
         "brickdata": data_dir / "brickdata.feather",
+        "otherdata": data_dir / "otherdata.feather",
         "ledger": data_dir / "ledger.feather",
     }
 
@@ -33,8 +35,8 @@ def _build_artifact_bundle(paths: dict[str, Path]) -> ArtifactBundle:
             ArtifactRef(key="inventory", path=paths["inventory"], kind="file", role="primary"),
             ArtifactRef(key="raw_store", path=paths["raw_store"], kind="file", role="primary"),
             ArtifactRef(key="metadata", path=paths["metadata"], kind="file", role="primary"),
-            ArtifactRef(key="otherdata", path=paths["otherdata"], kind="file", role="primary"),
             ArtifactRef(key="brickdata", path=paths["brickdata"], kind="file", role="primary"),
+            ArtifactRef(key="otherdata", path=paths["otherdata"], kind="file", role="primary"),
             ArtifactRef(key="ledger", path=paths["ledger"], kind="file", role="primary"),
         )
     )
@@ -51,12 +53,17 @@ def _report_step_done(request: StageTaskRequest, step_name: str, **fields) -> No
 
 
 def build_stage_data(request: StageTaskRequest) -> StageTaskResult:
-    dataset_name = str(request.config.get("dataset") or request.dataset_id).strip()
+    if "dataset" not in request.config:
+        raise ValueError("Stage 1 resolved config must define dataset")
+    dataset_name = str(request.config["dataset"]).strip()
+    if not dataset_name:
+        raise ValueError("Stage 1 resolved config dataset must be non-empty")
+
     input_dir = _resolve_input_dir(request)
     paths = _build_output_paths(request.data_dir)
     stage_cfg = dict(request.config)
-    stage_cfg.setdefault("dataset", dataset_name)
     dataset = load_dataset(dataset_name, stage_cfg, reporter=request.reporter)
+    dataset.bind_runtime(reporter=request.reporter, progress=request.progress)
 
     t0 = time.perf_counter()
     _report_step_start(request, "inventory")
@@ -90,15 +97,30 @@ def build_stage_data(request: StageTaskRequest) -> StageTaskResult:
     _report_step_done(request, "brickdata", rows=len(brickdata_df), path=paths["brickdata"], elapsed=f"{brickdata_elapsed:.2f}s")
 
     t0 = time.perf_counter()
+    _report_step_start(request, "otherdata")
+    otherdata_df = dataset.build_otherdata(
+        input_dir=input_dir,
+        cfg=stage_cfg,
+        inventory_df=inventory_df,
+        meta_df=metadata_df,
+        bricks_df=brickdata_df,
+        out_path=paths["otherdata"],
+    )
+    otherdata_elapsed = time.perf_counter() - t0
+    _report_step_done(request, "otherdata", rows=len(otherdata_df), path=paths["otherdata"], elapsed=f"{otherdata_elapsed:.2f}s")
+
+    t0 = time.perf_counter()
     _report_step_start(request, "ledger")
     ledger_df = dataset.build_ledger(
         inventory_df=inventory_df,
         meta_df=metadata_df,
         bricks_df=brickdata_df,
+        other_df=otherdata_df,
         inventory_store_path=paths["inventory"],
         ts_store_path=paths["raw_store"],
         meta_store_path=paths["metadata"],
         bricks_store_path=paths["brickdata"],
+        other_store_path=paths["otherdata"],
         out_path=paths["ledger"],
         validate=True,
     )
@@ -110,13 +132,16 @@ def build_stage_data(request: StageTaskRequest) -> StageTaskResult:
         "ingested_series": int(ingested_series),
         "metadata_rows": len(metadata_df),
         "brickdata_rows": len(brickdata_df),
+        "otherdata_rows": len(otherdata_df),
         "ledger_rows": len(ledger_df),
         "inventory_elapsed_seconds": round(inventory_elapsed, 6),
         "ingest_elapsed_seconds": round(ingest_elapsed, 6),
         "metadata_elapsed_seconds": round(metadata_elapsed, 6),
         "brickdata_elapsed_seconds": round(brickdata_elapsed, 6),
+        "otherdata_elapsed_seconds": round(otherdata_elapsed, 6),
         "ledger_elapsed_seconds": round(ledger_elapsed, 6),
     }
+    metrics.update(dataset.pop_runtime_metrics())
 
     return StageTaskResult(
         status="success",

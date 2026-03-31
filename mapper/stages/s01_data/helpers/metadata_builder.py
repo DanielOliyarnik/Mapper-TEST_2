@@ -1,26 +1,22 @@
 from __future__ import annotations
 
+import pandas as pd
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable
+from typing import Any, Callable
 
 from .utils import normalize_col
 
-if TYPE_CHECKING:
-    import pandas as pd
-
 
 def build_metadata(
-    read_fn: Callable[..., "pd.DataFrame"],
+    read_fn: Callable[..., pd.DataFrame],
     field_fn: Callable[..., dict[str, Any]],
     *,
     input_dir: Path,
     cfg: dict[str, Any],
-    inventory_df: "pd.DataFrame",
+    inventory_df: pd.DataFrame,
     out_path: Path,
     meta_cfg: dict[str, Any],
-) -> "pd.DataFrame":
-    import pandas as pd
-
+) -> pd.DataFrame:
     meta_ids = read_fn(input_dir=input_dir, cfg=cfg, inventory_df=inventory_df, meta_cfg=meta_cfg)
     if not hasattr(meta_ids, "columns") or "key" not in meta_ids.columns:
         raise ValueError("metadata_reader must return a DataFrame with 'key'")

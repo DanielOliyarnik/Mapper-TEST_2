@@ -49,30 +49,36 @@ def normalize_retrain_selection(args: Iterable[str] | None, stage_specs: dict[st
 
 def load_run_config(path: str | Path) -> dict[str, Any]:
     cfg_path = Path(path)
-    text = cfg_path.read_text(encoding="utf-8").strip()
-    if not text:
+    text = cfg_path.read_text(encoding="utf-8")
+    if not text.strip():
         return {}
     suffix = cfg_path.suffix.lower()
-    if suffix not in {".json", ".yaml", ".yml"}:
-        raise TypeError(f"Unsupported config extension for {cfg_path}")
     if suffix == ".json":
         try:
             loaded = json.loads(text)
         except json.JSONDecodeError as exc:
             raise ValueError(f"Invalid JSON config: {cfg_path}") from exc
-    else:
+    elif suffix in {".yaml", ".yml"}:
         loaded = yaml.safe_load(text)
+    else:
+        raise TypeError(f"Unsupported config extension for {cfg_path}")
+    if loaded is None:
+        return {}
     if not isinstance(loaded, dict):
         raise TypeError(f"Config root must be an object: {cfg_path}")
     return loaded
 
 
 def resolve_dataset_id(cfg: dict[str, Any]) -> str:
-    data_source = cfg.get("DATA_SOURCE", {})
-    dataset_id = data_source.get("dataset") or cfg.get("dataset")
+    if "DATA_SOURCE" not in cfg or not isinstance(cfg["DATA_SOURCE"], dict):
+        raise ValueError("Run config must define DATA_SOURCE as an object")
+    data_source = cfg["DATA_SOURCE"]
+    if "dataset" not in data_source:
+        raise ValueError("Run config must define DATA_SOURCE.dataset")
+    dataset_id = str(data_source["dataset"]).strip()
     if not dataset_id:
-        raise ValueError("Run config must define DATA_SOURCE.dataset or dataset")
-    return str(dataset_id)
+        raise ValueError("Run config DATA_SOURCE.dataset must be non-empty")
+    return dataset_id
 
 
 def resolve_enabled_stages(
@@ -94,11 +100,13 @@ def resolve_stage_task_name(cfg: dict[str, Any], stage_name: str, stage_def: Any
 
 
 def resolve_stage_task_config(cfg: dict[str, Any], stage_name: str, task_name: str) -> dict[str, Any]:
-    data_source = dict(cfg.get("DATA_SOURCE", {}))
-    stage_cfg = dict(data_source)
-    stage_cfg.update(dict(cfg.get(stage_name, {})))
-    if "dataset" not in stage_cfg and "dataset" in cfg:
-        stage_cfg["dataset"] = cfg["dataset"]
+    if "DATA_SOURCE" not in cfg or not isinstance(cfg["DATA_SOURCE"], dict):
+        raise ValueError(f"Run config must define DATA_SOURCE for stage {stage_name}")
+    stage_cfg = dict(cfg["DATA_SOURCE"])
+    if stage_name in cfg:
+        if not isinstance(cfg[stage_name], dict):
+            raise TypeError(f"Run config section {stage_name} must be an object")
+        stage_cfg.update(dict(cfg[stage_name]))
     if "dataset" not in stage_cfg:
         raise ValueError(f"Run config must define dataset for stage {stage_name}")
     stage_cfg["task_name"] = task_name
@@ -133,7 +141,9 @@ def normalize_run_config(
     stage_defs: Mapping[str, Any] | None = None,
 ) -> ResolvedRunConfig:
     dataset_id = resolve_dataset_id(cfg)
-    output_root = Path(cfg.get("output_root", "project-data"))
+    if "output_root" not in cfg:
+        raise ValueError("Run config must define output_root")
+    output_root = Path(cfg["output_root"])
     requested_stages = resolve_enabled_stages(cfg, stages, stage_specs)
     retrain_stages = normalize_retrain_selection(retrain, stage_specs)
     stage_task_names = {

@@ -17,16 +17,16 @@ def _local_name(uri: Any) -> str:
     return text.rsplit("/", 1)[-1]
 
 
-def _predicates_by_local_name(graph, names: list[str]):
+def _predicates_by_local_name(graph: Graph, names: list[str]) -> set[URIRef]:
     wanted = {str(name) for name in names}
-    out = set()
+    out: set[URIRef] = set()
     for predicate in graph.predicates(None, None):
         if _local_name(predicate) in wanted:
             out.add(URIRef(str(predicate)))
     return out
 
 
-def _first_type_local(graph, subject_local: str) -> str | None:
+def _first_type_local(graph: Graph, subject_local: str) -> str | None:
     for subject, _, obj in graph.triples((None, RDF.type, None)):
         if _local_name(subject) == subject_local:
             return _local_name(obj)
@@ -69,28 +69,24 @@ def _zone_from_owner(owner_id: str | None, parent_of: dict[str, str], feeds_map:
 
 
 def read_brick_ttl(*, input_dir: Path, cfg: dict[str, Any], inventory_df, brick_cfg: dict[str, Any]):
-    del cfg
-    ttl_rel = str((brick_cfg or {}).get("ttl_path") or "").strip()
-    if not ttl_rel:
-        raise ValueError("dryad_blg59 brickdata_config.json missing 'ttl_path'")
-    ttl_path = Path(input_dir) / ttl_rel
+    ttl_path = Path(input_dir) / str(brick_cfg["ttl_path"]).strip()
     if not ttl_path.exists():
         raise FileNotFoundError(f"dryad_blg59 TTL not found: {ttl_path}")
     alias_map = {
-        str(item.get("brick") or "").strip(): str(item.get("csv") or "").strip()
-        for item in list((brick_cfg or {}).get("point_alias_rules") or [])
-        if str(item.get("brick") or "").strip() and str(item.get("csv") or "").strip()
+        str(item["brick"]).strip(): str(item["csv"]).strip()
+        for item in brick_cfg["point_alias_rules"]
+        if str(item["brick"]).strip() and str(item["csv"]).strip()
     }
     graph = Graph()
     graph.parse(str(ttl_path), format="turtle")
     type_by_local = {}
     for subject, _, obj in graph.triples((None, RDF.type, None)):
         type_by_local[_local_name(subject)] = _local_name(obj)
-    predicates_cfg = (brick_cfg or {}).get("predicates") or {}
-    has_point_preds = _predicates_by_local_name(graph, list(predicates_cfg.get("has_point") or ["hasPoint"]))
-    has_part_preds = _predicates_by_local_name(graph, list(predicates_cfg.get("has_part") or ["hasPart"]))
-    feeds_preds = _predicates_by_local_name(graph, list(predicates_cfg.get("feeds") or ["feeds"]))
-    is_fed_by_preds = _predicates_by_local_name(graph, list(predicates_cfg.get("is_fed_by") or ["isFedBy"]))
+    predicates_cfg = brick_cfg["predicates"]
+    has_point_preds = _predicates_by_local_name(graph, list(predicates_cfg["has_point"]))
+    has_part_preds = _predicates_by_local_name(graph, list(predicates_cfg["has_part"]))
+    feeds_preds = _predicates_by_local_name(graph, list(predicates_cfg["feeds"]))
+    is_fed_by_preds = _predicates_by_local_name(graph, list(predicates_cfg["is_fed_by"]))
 
     parent_of: dict[str, str] = {}
     for predicate in has_part_preds:
@@ -133,6 +129,7 @@ def read_brick_ttl(*, input_dir: Path, cfg: dict[str, Any], inventory_df, brick_
                     "brick_alias_match": key != local,
                 }
             )
+    _ = cfg
     out = pd.DataFrame.from_records(rows)
     if out.empty:
         return pd.DataFrame(columns=["key", "label", "brick_uri", "brick_class"])

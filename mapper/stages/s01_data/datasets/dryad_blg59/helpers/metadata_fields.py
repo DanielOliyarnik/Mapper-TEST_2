@@ -13,7 +13,7 @@ ROLE_HINTS = {
 
 
 def _title_label(key: str) -> str:
-    return re.sub(r"\s+", " ", str(key or "").replace("_", " ").strip()).upper()
+    return re.sub(r"\s+", " ", str(key).replace("_", " ").strip()).upper()
 
 
 def _match_role(key: str, role_hint: str | None) -> str:
@@ -26,10 +26,10 @@ def _match_role(key: str, role_hint: str | None) -> str:
 
 
 def _unit_candidates_for_key(*, key: str, source_group: str, meta_cfg: dict[str, Any]) -> list[str]:
-    rules = dict(meta_cfg.get("source_unit_rules") or {})
-    group_cfg = dict(rules.get(source_group) or {})
-    exact_units = dict(group_cfg.get("exact_units") or {})
-    candidates = [str(value) for value in list(group_cfg.get("default_candidates") or [])]
+    rules = dict(meta_cfg["source_unit_rules"])
+    group_cfg = dict(rules[source_group]) if source_group in rules else {}
+    exact_units = dict(group_cfg["exact_units"]) if "exact_units" in group_cfg else {}
+    candidates = [str(value) for value in list(group_cfg["default_candidates"])] if "default_candidates" in group_cfg else []
     unit = None
     for pattern, value in exact_units.items():
         if re.search(str(pattern), key, flags=re.IGNORECASE):
@@ -49,14 +49,15 @@ def _unit_candidates_for_key(*, key: str, source_group: str, meta_cfg: dict[str,
 def get_metadata_fields(meta_row: dict[str, Any], meta_cfg: dict[str, Any]) -> dict[str, Any]:
     key = str(meta_row.get("key") or "").strip()
     source_group = str(meta_row.get("source_group") or "").strip()
-    role = _match_role(key, str(meta_row.get("role_hint") or "").strip() or None)
+    role_hint = str(meta_row.get("role_hint") or "").strip() or None
+    role = _match_role(key, role_hint)
     candidates = _unit_candidates_for_key(key=key, source_group=source_group, meta_cfg=meta_cfg)
     unit = candidates[0] if candidates else None
     location = meta_row.get("location_hint")
     if location is not None and str(location).strip() == "":
         location = None
     return {
-        "label": _title_label(meta_row.get("label_seed") or key),
+        "label": _title_label(str(meta_row.get("label_seed") or key)),
         "role": role,
         "location": str(location).strip() if location else None,
         "unit": unit,

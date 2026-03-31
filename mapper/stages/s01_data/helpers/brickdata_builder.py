@@ -1,26 +1,22 @@
 from __future__ import annotations
 
+import pandas as pd
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable
+from typing import Any, Callable
 
 from .utils import normalize_col
 
-if TYPE_CHECKING:
-    import pandas as pd
-
 
 def build_brickdata(
-    read_fn: Callable[..., "pd.DataFrame"],
+    read_fn: Callable[..., pd.DataFrame],
     field_fn: Callable[..., dict[str, Any]],
     *,
     input_dir: Path,
     cfg: dict[str, Any],
-    inventory_df: "pd.DataFrame",
+    inventory_df: pd.DataFrame,
     out_path: Path,
     brick_cfg: dict[str, Any],
-) -> "pd.DataFrame":
-    import pandas as pd
-
+) -> pd.DataFrame:
     brick_ids = read_fn(input_dir=input_dir, cfg=cfg, inventory_df=inventory_df, brick_cfg=brick_cfg)
     required = {"key", "label", "brick_uri", "brick_class"}
     if not hasattr(brick_ids, "columns") or not required.issubset(brick_ids.columns):

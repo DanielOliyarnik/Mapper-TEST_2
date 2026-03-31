@@ -29,17 +29,19 @@ def _equip_hint(key: str) -> str | None:
     for pattern, template in [
         (r"^rtu_(?P<capture>[0-9]+)_", "RTU_{capture}"),
         (r"^aru_(?P<capture>[0-9]+)_", "ARU_{capture}"),
-        (r"^(hp)_", "HP"),
-        (r"^(ashp)_", "ASHP"),
+        (r"^(hp)", "HP"),
+        (r"^(ashp)", "ASHP"),
     ]:
         match = re.search(pattern, key, flags=re.IGNORECASE)
         if match:
-            return template.format(capture=match.group(1))
+            captures = match.groupdict()
+            if "capture" in captures:
+                return template.format(capture=captures["capture"])
+            return template
     return None
 
 
 def read_metadata_inferred(*, input_dir: Path, cfg: dict[str, Any], inventory_df, meta_cfg: dict[str, Any]):
-    del input_dir, meta_cfg
     rows: list[dict[str, Any]] = []
     for row in inventory_df.to_dict(orient="records"):
         key = str(row.get("key") or "").strip()
@@ -47,6 +49,7 @@ def read_metadata_inferred(*, input_dir: Path, cfg: dict[str, Any], inventory_df
             continue
         source_group = str(row.get("source_group") or "").strip()
         zone_hint = _zone_hint(key)
+        equip_hint = _equip_hint(key)
         rows.append(
             {
                 "key": key,
@@ -56,10 +59,10 @@ def read_metadata_inferred(*, input_dir: Path, cfg: dict[str, Any], inventory_df
                 "source_unit_rule": source_group,
                 "role_hint": _role_hint(key),
                 "zone_hint": zone_hint,
-                "equip_hint": _equip_hint(key),
-                "location_hint": zone_hint or _equip_hint(key),
+                "equip_hint": equip_hint,
+                "location_hint": zone_hint or equip_hint,
                 "class_hint": source_group,
             }
         )
-    _ = cfg
+    _ = (input_dir, cfg, meta_cfg)
     return pd.DataFrame.from_records(rows)

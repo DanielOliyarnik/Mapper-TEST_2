@@ -12,29 +12,47 @@ class DatasetBase(ABC):
     """
     Formal Stage 1 dataset contract.
 
-    Dataset implementations are responsible for producing the standardized Stage 1
-    outputs while keeping dataset-specific parsing, matching, and local config
-    ownership inside the dataset package.
+    Stage 1 is split into a general orchestration layer and a dataset-specific
+    implementation layer. Dataset implementations own dataset-local parsing,
+    matching, and config resolution, while the general layer owns the stage
+    contract and standardized outputs.
 
-    Implementations must write:
+    Stage 1 must write:
 
     - `inventory.feather`
     - `raw_store.h5`
     - `metadata.feather`
-    - `otherdata.feather`
     - `brickdata.feather`
+    - `otherdata.feather`
     - `ledger.feather`
 
-    The canonical raw store contract is:
+    Canonical raw-store contract:
 
     - `/series/<key>/time`
     - `/series/<key>/value`
+
+    `input_dir` is the raw-data root for the dataset.
     """
 
     dataset_name: str
 
     def __init__(self, cfg: dict[str, Any]) -> None:
         self.cfg = cfg
+        self.reporter: Any | None = None
+        self.progress: Any | None = None
+        self._runtime_metrics: dict[str, Any] = {}
+
+    def bind_runtime(self, *, reporter: Any | None = None, progress: Any | None = None) -> None:
+        self.reporter = reporter
+        self.progress = progress
+
+    def record_metrics(self, **metrics: Any) -> None:
+        self._runtime_metrics.update(metrics)
+
+    def pop_runtime_metrics(self) -> dict[str, Any]:
+        metrics = dict(self._runtime_metrics)
+        self._runtime_metrics.clear()
+        return metrics
 
     @abstractmethod
     def build_inventory(
@@ -43,13 +61,6 @@ class DatasetBase(ABC):
         cfg: dict[str, Any],
         out_path: Path,
     ) -> "pd.DataFrame":
-        """
-        Build and write the canonical inventory table.
-
-        Expected output:
-        - one row per stable `key`
-        - must write `out_path` as Feather
-        """
         raise NotImplementedError
 
     @abstractmethod
@@ -62,16 +73,6 @@ class DatasetBase(ABC):
         max_workers: int = 8,
         chunk_len: int = 8192,
     ) -> int:
-        """
-        Ingest per-key timeseries and write the canonical HDF5 store.
-
-        Required store shape:
-        - `/series/<key>/time`
-        - `/series/<key>/value`
-
-        Return:
-        - number of successfully written series
-        """
         raise NotImplementedError
 
     @abstractmethod
@@ -82,13 +83,6 @@ class DatasetBase(ABC):
         inventory_df: "pd.DataFrame",
         out_path: Path,
     ) -> "pd.DataFrame":
-        """
-        Build and write the standardized metadata table.
-
-        Expected output:
-        - one row per `key`
-        - must write `out_path` as Feather
-        """
         raise NotImplementedError
 
     @abstractmethod
@@ -99,12 +93,24 @@ class DatasetBase(ABC):
         inventory_df: "pd.DataFrame",
         out_path: Path,
     ) -> "pd.DataFrame":
-        """
-        Build and write the standardized brickdata table.
+        raise NotImplementedError
 
-        Expected output:
-        - one row per `key` where available
-        - must write `out_path` as Feather
+    @abstractmethod
+    def build_otherdata(
+        self,
+        input_dir: Path,
+        cfg: dict[str, Any],
+        inventory_df: "pd.DataFrame",
+        meta_df: "pd.DataFrame",
+        bricks_df: "pd.DataFrame",
+        out_path: Path,
+    ) -> "pd.DataFrame":
+        """
+        Build and write the standardized otherdata table.
+
+        Dataset-specific implementations should delegate into the general
+        `helpers/otherdata_builder.py` path, the same way metadata and
+        brickdata use their general helpers.
         """
         raise NotImplementedError
 
@@ -114,18 +120,13 @@ class DatasetBase(ABC):
         inventory_df: "pd.DataFrame",
         meta_df: "pd.DataFrame",
         bricks_df: "pd.DataFrame",
+        other_df: "pd.DataFrame",
         inventory_store_path: Path,
         ts_store_path: Path,
         meta_store_path: Path,
         bricks_store_path: Path,
+        other_store_path: Path,
         out_path: Path,
         validate: bool = True,
     ) -> "pd.DataFrame":
-        """
-        Build and write the authoritative Stage 1 ledger.
-
-        The ledger format is standardized, but the association logic between
-        inventory keys and metadata/brickdata/otherdata evidence remains
-        dataset-specific.
-        """
         raise NotImplementedError

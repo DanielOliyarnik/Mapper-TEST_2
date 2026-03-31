@@ -1,23 +1,17 @@
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    import pandas as pd
+import numpy as np
+import pandas as pd
 
 
-def _compile_rx_many(pattern_list: list[str] | None) -> list[re.Pattern[str]]:
-    if not pattern_list:
-        return []
+def _compile_rx_many(pattern_list: list[str]) -> list[re.Pattern[str]]:
     return [re.compile(f"({pattern})", re.IGNORECASE) for pattern in pattern_list if pattern]
 
 
-def _build_search_list(df: "pd.DataFrame", source_list: list[str]) -> "pd.Series":
-    import pandas as pd
-
+def _build_search_list(df: pd.DataFrame, source_list: list[str]) -> pd.Series:
     parts = []
-    for source_name in source_list or []:
+    for source_name in source_list:
         if source_name in df.columns:
             parts.append(df[source_name].astype("string", copy=False).fillna(""))
     if not parts:
@@ -28,9 +22,7 @@ def _build_search_list(df: "pd.DataFrame", source_list: list[str]) -> "pd.Series
     return out
 
 
-def _first_match_any(search_list: "pd.Series", rx_list: list[re.Pattern[str]]) -> "pd.Series":
-    import pandas as pd
-
+def _first_match_any(search_list: pd.Series, rx_list: list[re.Pattern[str]]) -> pd.Series:
     if not rx_list:
         return pd.Series([""] * len(search_list), index=search_list.index, dtype="string")
     out = pd.Series([""] * len(search_list), index=search_list.index, dtype="string")
@@ -45,14 +37,11 @@ def _first_match_any(search_list: "pd.Series", rx_list: list[re.Pattern[str]]) -
     return out
 
 
-def build_hierarchy(df: "pd.DataFrame", hierarchy_cfg: dict) -> "pd.Series":
-    import numpy as np
-    import pandas as pd
-
-    joiner = str(hierarchy_cfg.get("joiner") or " > ")
-    search_list = _build_search_list(df, list(hierarchy_cfg.get("source_order") or []))
-    parent = _first_match_any(search_list, _compile_rx_many(hierarchy_cfg.get("parent")))
-    child = _first_match_any(search_list, _compile_rx_many(hierarchy_cfg.get("child")))
+def build_hierarchy(df: pd.DataFrame, hierarchy_cfg: dict) -> pd.Series:
+    joiner = str(hierarchy_cfg["joiner"])
+    search_list = _build_search_list(df, list(hierarchy_cfg["source_order"]))
+    parent = _first_match_any(search_list, _compile_rx_many(list(hierarchy_cfg["parent"])))
+    child = _first_match_any(search_list, _compile_rx_many(list(hierarchy_cfg["child"])))
     label = df["label"] if "label" in df.columns else pd.Series([""] * len(df), index=df.index, dtype="string")
 
     p = parent.fillna("")

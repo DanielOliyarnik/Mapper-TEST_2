@@ -8,6 +8,16 @@ from typing import Any
 from .datasets.dataset_base import DatasetBase
 
 
+REQUIRED_DATASET_METHODS = (
+    "build_inventory",
+    "ingest_data",
+    "build_metadata",
+    "build_brickdata",
+    "build_otherdata",
+    "build_ledger",
+)
+
+
 def resolve_dataset_package(dataset_name: str) -> str:
     token = str(dataset_name or "").strip()
     if not token:
@@ -25,9 +35,7 @@ def list_available_datasets() -> list[str]:
     for child in sorted(datasets_root.iterdir()):
         if not child.is_dir():
             continue
-        if child.name.startswith("__"):
-            continue
-        if child.name == "__pycache__":
+        if child.name.startswith("__") or child.name == "__pycache__":
             continue
         if (child / "__init__.py").exists():
             names.append(child.name)
@@ -64,16 +72,9 @@ def find_dataset_class(module_or_package: Any) -> type[DatasetBase] | None:
 
 
 def validate_dataset_contract(dataset: object) -> None:
-    required_methods = (
-        "build_inventory",
-        "ingest_data",
-        "build_metadata",
-        "build_brickdata",
-        "build_ledger",
-    )
     if not isinstance(dataset, DatasetBase):
         raise TypeError(f"Stage 1 dataset does not implement DatasetBase: {dataset!r}")
-    missing = [name for name in required_methods if not callable(getattr(dataset, name, None))]
+    missing = [name for name in REQUIRED_DATASET_METHODS if not callable(getattr(dataset, name, None))]
     if missing:
         raise TypeError(f"Stage 1 dataset is missing required methods: {', '.join(missing)}")
 
@@ -92,5 +93,5 @@ def load_dataset(dataset_name: str, cfg: dict[str, Any], reporter: Any | None = 
         raise RuntimeError(f"No concrete DatasetBase implementation found for Stage 1 dataset {dataset_name!r}")
     dataset = dataset_cls(dict(cfg))
     validate_dataset_contract(dataset)
-    _ = reporter
+    dataset.bind_runtime(reporter=reporter, progress=None)
     return dataset

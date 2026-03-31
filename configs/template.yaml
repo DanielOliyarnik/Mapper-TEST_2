@@ -1,13 +1,25 @@
-{
-  "DATA_SOURCE": {
-    "dataset": "<dataset_name>",
-    "input_path": "<dataset_root>"
-  },
-  "output_root": "project-data",
-  "s01_data": {},
-  "s02_preprocessing": {},
-  "s03_embedding": {},
-  "s04_similarity": {},
-  "s05_gnn": {},
-  "s07_surrogates": {}
-}
+DATA_SOURCE:
+  dataset: "<dataset_name>"
+  input_root: "<dataset_raw_data_root>"
+
+output_root: "<dataset_mapper_data_root>"
+
+s01_data:
+  io:
+    max_workers: 1
+    chunk_len: 8192
+
+s02_preprocessing: {}
+s03_embedding: {}
+s04_similarity: {}
+s05_gnn: {}
+s07_surrogates: {}
+
+exec:
+  reporting:
+    console: true
+    progress: true
+    progress_style: single_line
+    progress_every: 10
+    progress_min_seconds: 1.0
+    show_eta: true

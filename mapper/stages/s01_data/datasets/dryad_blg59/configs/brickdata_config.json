@@ -1,47 +1,144 @@
 {
-  "ttl_path": "raw-data/brickdata/dryad_bldg59.ttl",
+  "ttl_path": "brickdata/dryad_bldg59.ttl",
   "predicates": {
-    "has_point": ["hasPoint"],
-    "has_part": ["hasPart"],
-    "feeds": ["feeds"],
-    "is_fed_by": ["isFedBy"]
+    "has_point": [
+      "hasPoint"
+    ],
+    "has_part": [
+      "hasPart"
+    ],
+    "feeds": [
+      "feeds"
+    ],
+    "is_fed_by": [
+      "isFedBy"
+    ]
   },
   "role_overrides": [
-    {"source": "key", "pattern": "_cooling_sp$|_heating_sp$|_econ_stpt_|_pa_static_stpt_|_sat_sp_", "role": "setpoint"},
-    {"source": "key", "pattern": "_hw_valve$|_oadmpr_pct$|_fan_spd$", "role": "actuator"},
-    {"source": "key", "pattern": "_temp$|_co2$|_flow|plenum_press|_fbk_", "role": "sensor"}
+    {
+      "source": "key",
+      "pattern": "_cooling_sp$|_heating_sp$|_econ_stpt_|_pa_static_stpt_|_sat_sp_",
+      "role": "setpoint"
+    },
+    {
+      "source": "key",
+      "pattern": "_hw_valve$|_oadmpr_pct$|_fan_spd$",
+      "role": "actuator"
+    },
+    {
+      "source": "key",
+      "pattern": "_temp$|_co2$|_flow|plenum_press|_fbk_",
+      "role": "sensor"
+    }
   ],
   "role_rules": [
-    {"source": "brick_class_local", "pattern": "Setpoint", "role": "setpoint"},
-    {"source": "brick_class_local", "pattern": "Command", "role": "actuator"},
-    {"source": "brick_class_local", "pattern": "Valve|Damper", "role": "actuator"},
-    {"source": "brick_class_local", "pattern": "Sensor|Speed|Flow|Temperature|Humidity|Pressure|Count", "role": "sensor"}
+    {
+      "source": "brick_class_local",
+      "pattern": "Setpoint",
+      "role": "setpoint"
+    },
+    {
+      "source": "brick_class_local",
+      "pattern": "Command",
+      "role": "actuator"
+    },
+    {
+      "source": "brick_class_local",
+      "pattern": "Valve|Damper",
+      "role": "actuator"
+    },
+    {
+      "source": "brick_class_local",
+      "pattern": "Sensor|Speed|Flow|Temperature|Humidity|Pressure|Count",
+      "role": "sensor"
+    }
   ],
   "default_role": "sensor",
   "unit_candidates_tokens": {
-    "TEMP": ["DEGF", "DEGC"],
-    "TEMPERATURE": ["DEGF", "DEGC"],
-    "FLOW": ["CFM", "GPM"],
-    "HUMIDITY": ["%"],
-    "DAMPER": ["%"],
-    "VALVE": ["%"],
-    "SPEED": ["%"],
-    "PRESSURE": ["INH2O", "PA"],
-    "COUNT": ["COUNT"]
+    "TEMP": [
+      "DEGF",
+      "DEGC"
+    ],
+    "TEMPERATURE": [
+      "DEGF",
+      "DEGC"
+    ],
+    "FLOW": [
+      "CFM",
+      "GPM"
+    ],
+    "HUMIDITY": [
+      "%"
+    ],
+    "DAMPER": [
+      "%"
+    ],
+    "VALVE": [
+      "%"
+    ],
+    "SPEED": [
+      "%"
+    ],
+    "PRESSURE": [
+      "INH2O",
+      "PA"
+    ],
+    "COUNT": [
+      "COUNT"
+    ]
   },
   "point_alias_rules": [
-    {"brick": "rtu_001_oa_damper", "csv": "rtu_001_oadmpr_pct"},
-    {"brick": "rtu_002_oa_damper", "csv": "rtu_002_oadmpr_pct"},
-    {"brick": "rtu_003_oa_damper", "csv": "rtu_003_oadmpr_pct"},
-    {"brick": "rtu_004_oa_damper", "csv": "rtu_004_oadmpr_pct"},
-    {"brick": "rtu_001_oa_fr", "csv": "rtu_001_oa_flow_tn"},
-    {"brick": "rtu_002_oa_fr", "csv": "rtu_002_oa_flow_tn"},
-    {"brick": "rtu_003_oa_fr", "csv": "rtu_003_oa_flow_tn"},
-    {"brick": "rtu_004_oa_fr", "csv": "rtu_004_oa_flow_tn"},
-    {"brick": "rtu_001_fltrd_gnd_plenum_press_tn", "csv": "rtu_001_fltrd_gnd_lvl_plenum_press_tn"},
-    {"brick": "rtu_002_fltrd_gnd_plenum_press_tn", "csv": "rtu_002_fltrd_gnd_lvl_plenum_press_tn"},
-    {"brick": "rtu_003_fltrd_gnd_plenum_press_tn", "csv": "rtu_003_fltrd_gnd_lvl_plenum_press_tn"},
-    {"brick": "rtu_004_fltrd_gnd_plenum_press_tn", "csv": "rtu_004_fltrd_gnd_lvl_plenum_press_tn"},
-    {"brick": "occ_forth_south", "csv": "occ_fourth_south"}
+    {
+      "brick": "rtu_001_oa_damper",
+      "csv": "rtu_001_oadmpr_pct"
+    },
+    {
+      "brick": "rtu_002_oa_damper",
+      "csv": "rtu_002_oadmpr_pct"
+    },
+    {
+      "brick": "rtu_003_oa_damper",
+      "csv": "rtu_003_oadmpr_pct"
+    },
+    {
+      "brick": "rtu_004_oa_damper",
+      "csv": "rtu_004_oadmpr_pct"
+    },
+    {
+      "brick": "rtu_001_oa_fr",
+      "csv": "rtu_001_oa_flow_tn"
+    },
+    {
+      "brick": "rtu_002_oa_fr",
+      "csv": "rtu_002_oa_flow_tn"
+    },
+    {
+      "brick": "rtu_003_oa_fr",
+      "csv": "rtu_003_oa_flow_tn"
+    },
+    {
+      "brick": "rtu_004_oa_fr",
+      "csv": "rtu_004_oa_flow_tn"
+    },
+    {
+      "brick": "rtu_001_fltrd_gnd_plenum_press_tn",
+      "csv": "rtu_001_fltrd_gnd_lvl_plenum_press_tn"
+    },
+    {
+      "brick": "rtu_002_fltrd_gnd_plenum_press_tn",
+      "csv": "rtu_002_fltrd_gnd_lvl_plenum_press_tn"
+    },
+    {
+      "brick": "rtu_003_fltrd_gnd_plenum_press_tn",
+      "csv": "rtu_003_fltrd_gnd_lvl_plenum_press_tn"
+    },
+    {
+      "brick": "rtu_004_fltrd_gnd_plenum_press_tn",
+      "csv": "rtu_004_fltrd_gnd_lvl_plenum_press_tn"
+    },
+    {
+      "brick": "occ_forth_south",
+      "csv": "occ_fourth_south"
+    }
   ]
 }

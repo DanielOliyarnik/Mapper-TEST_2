@@ -1,5 +1,5 @@
 {
-  "timeseries_path": "raw-data/timeseries/<FILE>.csv",
+  "timeseries_path": "timeseries/<FILE>.csv",
   "time_column": "Datetime",
   "datetime_format": "%Y-%m-%d %H:%M:%S",
   "timezone": "UTC",

@@ -5,15 +5,15 @@ import pandas as pd
 from typing import Any
 
 
-def _norm_col(series):
+def _norm_col(series: pd.Series) -> pd.Series:
     out = series.astype("string", copy=False)
     out = out.str.strip()
-    return out.mask(out == "", __import__("pandas").NA)
+    return out.mask(out == "", pd.NA)
 
 
-def _normalize_keys(df, policy: dict[str, Any]):
+def _normalize_keys(df: pd.DataFrame, policy: dict[str, Any]) -> pd.Series:
     key = _norm_col(df["key"])
-    case = str((policy or {}).get("case") or "preserve").lower()
+    case = str(policy["case"]).lower() if "case" in policy else "preserve"
     if case == "upper":
         key = key.str.upper()
     elif case == "lower":
@@ -21,12 +21,12 @@ def _normalize_keys(df, policy: dict[str, Any]):
     return key
 
 
-def _extract_regex(source_df, source: dict[str, Any]):
-    column = str(source.get("column") or "key")
-    pattern = str(source.get("pattern") or "")
+def _extract_regex(source_df: pd.DataFrame, source: dict[str, Any]) -> pd.Series:
+    column = str(source["column"]) if "column" in source else "key"
+    pattern = str(source["pattern"]).strip()
     if not pattern:
         return pd.Series([pd.NA] * len(source_df), index=source_df.index, dtype="string")
-    src = _norm_col(source_df.get(column, pd.Series([pd.NA] * len(source_df), index=source_df.index)))
+    src = _norm_col(source_df[column]) if column in source_df.columns else pd.Series([pd.NA] * len(source_df), index=source_df.index, dtype="string")
     try:
         extracted = src.str.extract(pattern, expand=True)
     except ValueError as exc:
@@ -47,25 +47,23 @@ def _extract_regex(source_df, source: dict[str, Any]):
     else:
         cap = extracted
     cap = _norm_col(cap)
-    map_cfg = source.get("map") or {}
-    if isinstance(map_cfg, dict) and map_cfg:
-        cap = cap.map(map_cfg).fillna(cap)
-    template = source.get("template")
-    if isinstance(template, str) and template:
-        cap = cap.apply(lambda value: template.format(capture=value) if pd.notna(value) else pd.NA)
-    if source.get("to_upper", False):
+    if "map" in source and isinstance(source["map"], dict) and source["map"]:
+        cap = cap.map(source["map"]).fillna(cap)
+    if "template" in source and isinstance(source["template"], str) and source["template"]:
+        cap = cap.apply(lambda value: source["template"].format(capture=value) if pd.notna(value) else pd.NA)
+    if bool(source.get("to_upper", False)):
         cap = cap.str.upper()
     return cap
 
 
-def _extract_regex_template(source_df, source: dict[str, Any]):
-    column = str(source.get("column") or "key")
-    pattern = str(source.get("pattern") or "")
-    template = str(source.get("template") or "")
+def _extract_regex_template(source_df: pd.DataFrame, source: dict[str, Any]) -> pd.Series:
+    column = str(source["column"]) if "column" in source else "key"
+    pattern = str(source["pattern"]).strip()
+    template = str(source["template"]).strip()
     if not pattern or not template:
         return pd.Series([pd.NA] * len(source_df), index=source_df.index, dtype="string")
     rx = re.compile(pattern, flags=re.IGNORECASE)
-    src = _norm_col(source_df.get(column, pd.Series([pd.NA] * len(source_df), index=source_df.index)))
+    src = _norm_col(source_df[column]) if column in source_df.columns else pd.Series([pd.NA] * len(source_df), index=source_df.index, dtype="string")
 
     def _render(value: Any):
         if pd.isna(value):
@@ -88,26 +86,24 @@ def _extract_regex_template(source_df, source: dict[str, Any]):
         return rendered_s if rendered_s else pd.NA
 
     out = src.apply(_render).astype("string")
-    if source.get("to_upper", False):
+    if bool(source.get("to_upper", False)):
         out = out.str.upper()
     return out
 
 
-def _first_from_sources(base_df, sources: list[dict[str, Any]]):
-    import pandas as pd
-
+def _first_from_sources(base_df: pd.DataFrame, sources: list[dict[str, Any]]) -> pd.Series:
     out = pd.Series([pd.NA] * len(base_df), index=base_df.index, dtype="string")
-    for source in sources or []:
-        source_type = str(source.get("type") or "").strip().lower()
+    for source in sources:
+        source_type = str(source["type"]).strip().lower()
         if source_type == "column":
-            column = str(source.get("column") or "")
-            candidate = _norm_col(base_df.get(column, pd.Series([pd.NA] * len(base_df), index=base_df.index)))
+            column = str(source["column"])
+            candidate = _norm_col(base_df[column]) if column in base_df.columns else pd.Series([pd.NA] * len(base_df), index=base_df.index, dtype="string")
         elif source_type == "regex":
             candidate = _extract_regex(base_df, source)
         elif source_type == "regex_template":
             candidate = _extract_regex_template(base_df, source)
         elif source_type == "constant":
-            value = str(source.get("value") or "").strip()
+            value = str(source["value"]).strip() if "value" in source else ""
             if not value:
                 continue
             candidate = pd.Series([value] * len(base_df), index=base_df.index, dtype="string")
@@ -117,20 +113,20 @@ def _first_from_sources(base_df, sources: list[dict[str, Any]]):
     return out
 
 
-def _match_any_sources(base_df, sources: list[dict[str, Any]]):
+def _match_any_sources(base_df: pd.DataFrame, sources: list[dict[str, Any]]) -> pd.Series:
     out = pd.Series([False] * len(base_df), index=base_df.index, dtype="bool")
-    for source in sources or []:
-        source_type = str(source.get("type") or "").strip().lower()
+    for source in sources:
+        source_type = str(source["type"]).strip().lower()
         if source_type == "column":
-            column = str(source.get("column") or "")
-            candidate = _norm_col(base_df.get(column, pd.Series([pd.NA] * len(base_df), index=base_df.index)))
+            column = str(source["column"])
+            candidate = _norm_col(base_df[column]) if column in base_df.columns else pd.Series([pd.NA] * len(base_df), index=base_df.index, dtype="string")
             matched = candidate.notna()
         elif source_type == "regex":
             matched = _extract_regex(base_df, source).notna()
         elif source_type == "regex_template":
             matched = _extract_regex_template(base_df, source).notna()
         elif source_type == "constant":
-            value = str(source.get("value") or "").strip()
+            value = str(source["value"]).strip() if "value" in source else ""
             matched = pd.Series([bool(value)] * len(base_df), index=base_df.index, dtype="bool")
         else:
             continue
@@ -138,10 +134,10 @@ def _match_any_sources(base_df, sources: list[dict[str, Any]]):
     return out
 
 
-def _assign_loop_ids(merged, zone_id, id_rules: dict[str, Any]):
-    loop_cfg = id_rules.get("loop_ids") or {}
-    rules = list(loop_cfg.get("rules") or [])
-    delimiter = str(loop_cfg.get("delimiter") or "|")
+def _assign_loop_ids(merged: pd.DataFrame, zone_id: pd.Series, id_rules: dict[str, Any]) -> pd.Series:
+    loop_cfg = id_rules["loop_ids"]
+    rules = list(loop_cfg["rules"])
+    delimiter = str(loop_cfg["delimiter"])
     out_lists: list[list[str]] = [[] for _ in range(len(merged))]
     declared_ids: list[str] = []
 
@@ -166,8 +162,8 @@ def _assign_loop_ids(merged, zone_id, id_rules: dict[str, Any]):
         return out
 
     for rule in rules:
-        loop_id = str(rule.get("id") or "").strip()
-        set_value = rule.get("set", None)
+        loop_id = str(rule["id"]).strip() if "id" in rule and rule["id"] is not None else ""
+        set_value = rule["set"] if "set" in rule else None
         if set_value is None and loop_id:
             set_value = loop_id
         set_loops = _to_loop_list(set_value)
@@ -176,19 +172,17 @@ def _assign_loop_ids(merged, zone_id, id_rules: dict[str, Any]):
         for loop in set_loops:
             if loop and loop not in declared_ids:
                 declared_ids.append(loop)
-        src = list(rule.get("match_any") or [])
+        src = list(rule["match_any"]) if "match_any" in rule else []
         merged_loop = merged.copy()
         merged_loop["_zone_id"] = zone_id.astype("string")
         matched = _match_any_sources(merged_loop, src) if src else pd.Series([True] * len(merged_loop), index=merged_loop.index, dtype="bool")
-        allow = set(str(value) for value in (rule.get("zone_allowlist") or []))
-        deny = set(str(value) for value in (rule.get("zone_denylist") or []))
+        allow = set(str(value) for value in rule.get("zone_allowlist", []))
+        deny = set(str(value) for value in rule.get("zone_denylist", []))
         if allow:
             matched = matched & zone_id.astype("string").isin(allow)
         if deny:
             matched = matched & ~zone_id.astype("string").isin(deny)
-        mode = str(rule.get("mode") or "").strip().lower()
-        if not mode:
-            mode = "clear" if set_value is None else "append"
+        mode = str(rule["mode"]).strip().lower() if "mode" in rule else ("clear" if set_value is None else "append")
         for idx, ok in enumerate(matched.tolist()):
             if not ok:
                 continue
@@ -201,9 +195,9 @@ def _assign_loop_ids(merged, zone_id, id_rules: dict[str, Any]):
                     if loop not in out_lists[idx]:
                         out_lists[idx].append(loop)
 
-    fallback = loop_cfg.get("fallback") or {}
-    mode = str(fallback.get("mode") or "none").lower()
-    exclude_zone_ids = set(str(value) for value in (fallback.get("exclude_zone_ids") or []))
+    fallback = loop_cfg["fallback"]
+    mode = str(fallback["mode"]).lower()
+    exclude_zone_ids = set(str(value) for value in fallback.get("exclude_zone_ids", []))
     if mode in {"zone_all", "all_zone_loops"} and declared_ids:
         for idx, loops in enumerate(out_lists):
             if loops:
@@ -219,15 +213,15 @@ def _assign_loop_ids(merged, zone_id, id_rules: dict[str, Any]):
     return pd.Series(out_vals, index=merged.index, dtype="string")
 
 
-def _apply_regex_map(source, regex_rules: list[dict[str, Any]], default: str | None):
+def _apply_regex_map(source: pd.Series, regex_rules: list[dict[str, Any]], default: str | None) -> pd.Series:
     out = pd.Series([pd.NA] * len(source), index=source.index, dtype="string")
     src = source.astype("string")
-    for rule in regex_rules or []:
-        pattern = str(rule.get("pattern") or "").strip()
+    for rule in regex_rules:
+        pattern = str(rule["pattern"]).strip()
         if not pattern:
             continue
         value = rule.get("value")
-        template = str(rule.get("template") or "").strip()
+        template = str(rule["template"]).strip() if "template" in rule and rule["template"] is not None else ""
         mask = src.str.contains(pattern, regex=True, case=False, na=False)
         unresolved = out.isna() & mask
         if not unresolved.any():
@@ -254,36 +248,24 @@ def _apply_regex_map(source, regex_rules: list[dict[str, Any]], default: str | N
     return out
 
 
-def assign_standard_ids(*, key_df, evidence_df, id_rules: dict[str, Any]):
+def assign_standard_ids(*, key_df, source_df, id_rules: dict[str, Any]):
     base = key_df.loc[:, ["key"]].copy()
-    evidence = evidence_df.copy() if evidence_df is not None else pd.DataFrame(columns=["key"])
-    if "key" not in evidence.columns:
-        evidence = pd.DataFrame(columns=["key"])
-    merged = base.merge(evidence, on="key", how="left", copy=False)
-    merged["key"] = _normalize_keys(merged, id_rules.get("key_normalization") or {})
+    source = source_df.copy() if source_df is not None else pd.DataFrame(columns=["key"])
+    if "key" not in source.columns:
+        source = pd.DataFrame(columns=["key"])
+    merged = base.merge(source, on="key", how="left", copy=False)
+    merged["key"] = _normalize_keys(merged, id_rules["key_normalization"])
 
-    location_cfg = id_rules.get("location") or {}
-    location_seed = _first_from_sources(merged, list(location_cfg.get("sources") or []))
+    location_cfg = id_rules["location"]
+    location_seed = _first_from_sources(merged, list(location_cfg["sources"]))
     merged["location_seed"] = location_seed
 
-    zone_cfg = id_rules.get("zone_id") or {}
-    zone_sources = list(zone_cfg.get("sources") or [])
-    if not zone_sources:
-        zone_sources = [
-            {"type": "column", "column": "zone_hint"},
-            {"type": "regex_template", "column": "key", "pattern": r"^(zone_[0-9]+)_", "template": "{capture}"},
-            {"type": "regex_template", "column": "key", "pattern": r"^rtu_(?P<capture>[0-9]+)_", "template": "RTU_{capture}"},
-            {"type": "regex_template", "column": "key", "pattern": r"^aru_(?P<capture>[0-9]+)_", "template": "ARU_{capture}"},
-            {"type": "regex_template", "column": "key", "pattern": r"^(hp)_", "template": "HP"},
-            {"type": "regex_template", "column": "key", "pattern": r"^(ashp)_", "template": "ASHP"},
-        ]
-    zone_id = _first_from_sources(merged, zone_sources)
-    fallback = zone_cfg.get("fallback") or {}
-    mode = str(fallback.get("mode") or "none").lower()
-    fallback_value = str(fallback.get("value") or "GLOBAL")
-    if mode in {"constant", "global", "global_bucket"}:
-        zone_id = zone_id.fillna(fallback_value)
-    strictness = str((id_rules.get("strictness") or {}).get("missing_zone_id") or "fail").lower()
+    zone_cfg = id_rules["zone_id"]
+    zone_id = _first_from_sources(merged, list(zone_cfg["sources"]))
+    fallback = zone_cfg["fallback"]
+    if str(fallback["mode"]).lower() in {"constant", "global", "global_bucket"}:
+        zone_id = zone_id.fillna(str(fallback["value"]))
+    strictness = str(id_rules["strictness"]["missing_zone_id"]).lower()
     missing = zone_id.isna()
     if missing.any():
         if strictness == "fail":
@@ -293,41 +275,38 @@ def assign_standard_ids(*, key_df, evidence_df, id_rules: dict[str, Any]):
             merged = merged.loc[keep].reset_index(drop=True)
             zone_id = zone_id.loc[keep].reset_index(drop=True)
         elif strictness == "warn_and_global":
-            zone_id = zone_id.fillna(fallback_value)
+            zone_id = zone_id.fillna(str(fallback["value"]))
 
-    group_cfg = id_rules.get("group_id") or {}
-    policy = str(group_cfg.get("policy") or "identity").lower()
+    group_cfg = id_rules["group_id"]
+    policy = str(group_cfg["policy"]).lower()
     group_id = zone_id.copy()
-    if policy == "map":
-        group_map = group_cfg.get("map") or {}
-        if isinstance(group_map, dict):
-            group_id = group_id.map(group_map).fillna(group_id)
+    if policy == "map" and "map" in group_cfg and isinstance(group_cfg["map"], dict):
+        group_id = group_id.map(group_cfg["map"]).fillna(group_id)
     elif policy == "regex_map":
-        rules = list(group_cfg.get("regex_map") or [])
         default = group_cfg.get("default")
-        group_id = _apply_regex_map(source=zone_id, regex_rules=rules, default=str(default) if default is not None else None)
+        group_id = _apply_regex_map(source=zone_id, regex_rules=list(group_cfg["regex_map"]), default=str(default) if default is not None else None)
         if bool(group_cfg.get("fallback_to_zone_id", True)):
             group_id = group_id.fillna(zone_id)
 
-    equip_cfg = id_rules.get("equip_id") or {}
+    equip_cfg = id_rules["equip_id"]
     equip_id = pd.Series([pd.NA] * len(merged), index=merged.index, dtype="string")
     if bool(equip_cfg.get("enabled", True)):
-        equip_id = _first_from_sources(merged, list(equip_cfg.get("sources") or []))
+        equip_id = _first_from_sources(merged, list(equip_cfg["sources"]))
 
-    class_cfg = id_rules.get("class") or {}
+    class_cfg = id_rules["class"]
     class_col = pd.Series([pd.NA] * len(merged), index=merged.index, dtype="string")
     if bool(class_cfg.get("enabled", True)):
-        delimiter = str(class_cfg.get("delimiter") or "::")
-        components = list(class_cfg.get("components") or ["equip_id", "zone_id"])
+        delimiter = str(class_cfg["delimiter"])
+        components = list(class_cfg["components"])
         tmp = merged.copy()
         tmp["zone_id"] = zone_id
         tmp["group_id"] = group_id
         tmp["equip_id"] = equip_id
-        extras = list(class_cfg.get("extra_tags") or [])
+        extras = list(class_cfg.get("extra_tags", []))
         for idx, source in enumerate(extras):
             name = f"_extra_{idx}"
             if isinstance(source, str):
-                tmp[name] = _norm_col(tmp.get(source, pd.Series([pd.NA] * len(tmp), index=tmp.index)))
+                tmp[name] = _norm_col(tmp[source]) if source in tmp.columns else pd.Series([pd.NA] * len(tmp), index=tmp.index)
             elif isinstance(source, dict):
                 tmp[name] = _first_from_sources(tmp, [source])
             components.append(name)
@@ -343,7 +322,7 @@ def assign_standard_ids(*, key_df, evidence_df, id_rules: dict[str, Any]):
         class_col = pd.Series(values, index=tmp.index, dtype="string")
 
     location_default = location_seed.copy()
-    if str(location_cfg.get("default_from") or "zone_id") == "zone_id":
+    if str(location_cfg["default_from"]) == "zone_id":
         location_default = location_default.fillna(zone_id)
 
     loop_ids = _assign_loop_ids(merged=merged, zone_id=zone_id, id_rules=id_rules)

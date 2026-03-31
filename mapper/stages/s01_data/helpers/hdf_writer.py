@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import h5py
 from pathlib import Path
 
 
@@ -12,8 +13,6 @@ def write_series(
 ) -> None:
     if series is None or len(series) == 0:
         return
-    import h5py
-
     h5_path.parent.mkdir(parents=True, exist_ok=True)
     times = series.index.view("int64")
     values = series.values.astype("float32", copy=False)

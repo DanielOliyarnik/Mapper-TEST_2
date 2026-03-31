@@ -1,11 +1,9 @@
 from __future__ import annotations
 
 import json
+import pandas as pd
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
-
-if TYPE_CHECKING:
-    import pandas as pd
+from typing import Any
 
 
 def normalize_col(df: "pd.DataFrame", col: str = "key") -> None:
