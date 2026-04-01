@@ -1,4 +1,23 @@
 {
-  "name": "preprocessing_meta_contract.template.json",
-  "status": "scaffold"
+  "strict": true,
+  "required_fields": [
+    "key",
+    "role",
+    "label",
+    "location",
+    "hierarchy",
+    "unit",
+    "unit_candidates",
+    "zone_id",
+    "loop_ids"
+  ],
+  "optional_fields": [
+    "group_id",
+    "equip_id",
+    "class",
+    "brick_class"
+  ],
+  "passthrough_mode": "optional_only",
+  "list_fields": ["unit_candidates", "loop_ids"],
+  "null_like": [null, "", " ", "nan"]
 }

@@ -1,4 +1,7 @@
 {
-  "name": "preprocessing_unit_contract.template.json",
-  "status": "scaffold"
+  "standard_output_config_path": null,
+  "strict": true,
+  "units_map_override": {},
+  "unit_candidates_override": {},
+  "tests_override": {}
 }

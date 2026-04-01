@@ -1,4 +1,12 @@
 {
-  "name": "flagging.template.json",
-  "status": "scaffold"
+  "fillna_strategy": "constant",
+  "fillna_value": 0.0,
+  "rules": [
+    {
+      "name": "finite_values",
+      "type": "finite",
+      "action": "drop",
+      "enabled": true
+    }
+  ]
 }

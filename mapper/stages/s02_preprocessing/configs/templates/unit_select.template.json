@@ -1,4 +1,31 @@
 {
-  "name": "unit_select.template.json",
-  "status": "scaffold"
+  "unit_contract": {
+    "standard_output_config_path": null,
+    "strict": true,
+    "units_map_override": {},
+    "unit_candidates_override": {},
+    "tests_override": {}
+  },
+  "candidate_sources": [
+    "meta_unit_candidates",
+    "meta_unit",
+    "contract_keyword_map",
+    "candidate_rules",
+    "value_rules"
+  ],
+  "contract_keyword_fields": ["label", "key", "hierarchy", "class", "brick_class"],
+  "candidate_rules": [],
+  "value_rules": [],
+  "strictness": {
+    "on_empty_series": "raise",
+    "on_missing_candidates": "raise",
+    "on_no_matching_tests": "raise",
+    "on_below_min_fraction": "raise"
+  },
+  "filter_candidates_to_tests": true,
+  "min_fraction": 0.6,
+  "tests": {},
+  "select_settings": {
+    "abs_for_units": []
+  }
 }

@@ -1,0 +1,10 @@
+{
+  "attributes": {
+    "electric_terms": [
+      "KW",
+      "KWH",
+      "W"
+    ],
+    "power_kind": "generic"
+  }
+}

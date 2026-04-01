@@ -1,4 +1,37 @@
 {
-  "name": "smoothing_filtering.schema.json",
-  "status": "scaffold"
+  "type": "object",
+  "required": ["default"],
+  "properties": {
+    "default": {
+      "type": "object",
+      "required": ["method", "params"],
+      "properties": {
+        "method": {
+          "type": "string",
+          "enum": ["none", "identity", "pass", "rolling_mean", "rolling_median", "ema"]
+        },
+        "params": {"type": "object"},
+        "candidates": {"type": "object"}
+      }
+    },
+    "selectors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "method"],
+        "properties": {
+          "id": {"type": "string"},
+          "when": {},
+          "method": {
+            "type": "string",
+            "enum": ["none", "identity", "pass", "rolling_mean", "rolling_median", "ema"]
+          },
+          "params": {"type": "object"},
+          "candidates": {"type": "object"},
+          "sample_keys": {"type": ["integer", "null"]}
+        }
+      }
+    },
+    "sample_keys": {"type": ["integer", "null"]}
+  }
 }

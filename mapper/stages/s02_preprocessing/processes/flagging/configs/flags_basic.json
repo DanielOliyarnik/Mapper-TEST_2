@@ -1,4 +1,41 @@
 {
-  "name": "flags_basic",
-  "status": "scaffold"
+  "fillna_strategy": "constant",
+  "fillna_value": 0.0,
+  "rules": [
+    {
+      "name": "finite_values",
+      "type": "finite",
+      "action": "drop",
+      "enabled": true
+    },
+    {
+      "name": "default_rate_guard",
+      "type": "rate_change",
+      "action": "mark_only",
+      "enabled": false,
+      "params": {
+        "max_abs_delta": 5000.0
+      }
+    },
+    {
+      "name": "default_stale_guard",
+      "type": "stale",
+      "action": "mark_only",
+      "enabled": false,
+      "params": {
+        "epsilon": 1e-06,
+        "min_run_len": 12
+      }
+    },
+    {
+      "name": "default_outlier_guard",
+      "type": "outlier",
+      "action": "mark_only",
+      "enabled": false,
+      "params": {
+        "method": "zscore",
+        "threshold": 4.0
+      }
+    }
+  ]
 }

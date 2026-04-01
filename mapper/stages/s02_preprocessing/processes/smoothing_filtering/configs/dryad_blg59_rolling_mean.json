@@ -1,4 +1,11 @@
 {
-  "name": "dryad_blg59_rolling_mean",
-  "status": "scaffold"
+  "default": {
+    "method": "rolling_mean",
+    "params": {
+      "window": 9,
+      "center": true,
+      "min_periods": 1
+    }
+  },
+  "selectors": []
 }

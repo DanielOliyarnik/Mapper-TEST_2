@@ -1,4 +1,130 @@
 {
-  "name": "dryad_blg59_unit_select",
-  "status": "scaffold"
+  "unit_contract": {
+    "standard_output_config_path": null,
+    "strict": false,
+    "units_map_override": {},
+    "unit_candidates_override": {},
+    "tests_override": {}
+  },
+  "candidate_sources": [
+    "meta_unit_candidates",
+    "meta_unit",
+    "contract_keyword_map",
+    "candidate_rules",
+    "value_rules"
+  ],
+  "contract_keyword_fields": [
+    "label",
+    "key",
+    "hierarchy",
+    "class",
+    "brick_class"
+  ],
+  "candidate_rules": [
+    {
+      "name": "temperature",
+      "fields": ["label", "key", "brick_class", "class"],
+      "contains_any": ["TEMP", "TEMPERATURE", "DEGC", "DEGF"],
+      "candidates": ["DEGC", "DEGF"]
+    },
+    {
+      "name": "pressure",
+      "fields": ["label", "key", "brick_class", "class"],
+      "contains_any": ["PRESS", "STATIC PRESSURE", "DIFFERENTIAL PRESSURE", "PSI", "KPA", "PA", "INH2O"],
+      "candidates": ["PA", "KPA", "PSI", "INH2O"]
+    },
+    {
+      "name": "airflow",
+      "fields": ["label", "key", "brick_class", "class"],
+      "contains_any": ["AIR FLOW", "FLOW", "CFM", "L/S", "M3/H"],
+      "candidates": ["CFM", "L/S", "M3/H"]
+    },
+    {
+      "name": "waterflow",
+      "fields": ["label", "key", "brick_class", "class"],
+      "contains_any": ["WATER FLOW", "FLOW", "GPM", "L/S", "M3/H"],
+      "candidates": ["GPM", "L/S", "M3/H"]
+    },
+    {
+      "name": "power",
+      "fields": ["label", "key", "brick_class", "class"],
+      "contains_any": ["POWER", "KW", "KILOWATT", "W"],
+      "candidates": ["KW"]
+    },
+    {
+      "name": "energy",
+      "fields": ["label", "key", "brick_class", "class"],
+      "contains_any": ["ENERGY", "KWH", "MWH", "KILOWATT HOUR", "MEGAWATT HOUR"],
+      "candidates": ["KWH", "MWH"]
+    },
+    {
+      "name": "position_percent",
+      "fields": ["label", "key", "brick_class", "class"],
+      "contains_any": ["POSITION", "VALVE", "DAMPER", "PERCENT", "PCT", "%"],
+      "candidates": ["%"]
+    },
+    {
+      "name": "state_binary",
+      "fields": ["label", "key", "brick_class", "class"],
+      "contains_any": ["STATE", "STATUS", "ONOFF", "ON/OFF", "BINARY", "COMMAND", "CMD"],
+      "candidates": ["STATE", "BOOL"]
+    }
+  ],
+  "value_rules": [
+    {
+      "name": "binary_range",
+      "conditions": {
+        "min_gte": 0.0,
+        "max_lte": 1.0
+      },
+      "candidates": ["STATE", "BOOL"]
+    },
+    {
+      "name": "percent_range",
+      "conditions": {
+        "min_gte": 0.0,
+        "max_lte": 100.0,
+        "range_gte": 2.0
+      },
+      "candidates": ["%"]
+    },
+    {
+      "name": "very_large_pressure_pa_hint",
+      "conditions": {
+        "abs_max_gte": 5000.0
+      },
+      "candidates": ["PA"]
+    }
+  ],
+  "strictness": {
+    "on_empty_series": "raise",
+    "on_missing_candidates": "raise",
+    "on_no_matching_tests": "raise",
+    "on_below_min_fraction": "raise"
+  },
+  "filter_candidates_to_tests": true,
+  "min_fraction": 0.6,
+  "tests": {
+    "DEGC": {"range": [-40, 60]},
+    "DEGF": {"range": [-40, 140]},
+    "PA": {"range": [0, 5000]},
+    "KPA": {"range": [0, 50]},
+    "INH2O": {"range": [0, 10]},
+    "PSI": {"range": [0, 200]},
+    "CFM": {"range": [0, 50000]},
+    "GPM": {"range": [0, 20000]},
+    "L/S": {"range": [0, 5000]},
+    "M3/H": {"range": [0, 200000]},
+    "KW": {"range": [0, 5000]},
+    "KWH": {"range": [0, 100000000.0]},
+    "MWH": {"range": [0, 1000000.0]},
+    "FT^2": {"range": [0, 10000000.0]},
+    "M^2": {"range": [0, 1000000.0]},
+    "%": {"range": [0, 100]},
+    "STATE": {"range": [0, 1]},
+    "BOOL": {"range": [0, 1]}
+  },
+  "select_settings": {
+    "abs_for_units": ["CFM", "L/S", "M3/H", "GPM", "PSI", "KPA", "PA", "INH2O"]
+  }
 }

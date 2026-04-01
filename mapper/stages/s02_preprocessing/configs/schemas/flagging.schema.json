@@ -1,4 +1,29 @@
 {
-  "name": "flagging.schema.json",
-  "status": "scaffold"
+  "type": "object",
+  "required": ["fillna_strategy", "rules"],
+  "properties": {
+    "fillna_strategy": {
+      "type": "string",
+      "enum": ["constant", "ffill", "bfill", "none"]
+    },
+    "fillna_value": {"type": "number"},
+    "rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type"],
+        "properties": {
+          "name": {"type": "string"},
+          "type": {
+            "type": "string",
+            "enum": ["finite", "range", "rate_change", "rate", "stale", "flatline", "outlier"]
+          },
+          "enabled": {"type": "boolean"},
+          "action": {"type": "string", "enum": ["mark_only", "drop", "warn"]},
+          "apply_if": {},
+          "params": {"type": "object"}
+        }
+      }
+    }
+  }
 }

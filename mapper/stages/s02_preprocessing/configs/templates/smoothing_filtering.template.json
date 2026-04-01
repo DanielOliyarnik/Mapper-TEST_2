@@ -1,4 +1,15 @@
 {
-  "name": "smoothing_filtering.template.json",
-  "status": "scaffold"
+  "default": {
+    "method": "rolling_mean",
+    "params": {
+      "window": 9,
+      "center": true,
+      "min_periods": 1
+    },
+    "candidates": {
+      "window": [3, 5, 7, 9, 11]
+    }
+  },
+  "selectors": [],
+  "sample_keys": 256
 }

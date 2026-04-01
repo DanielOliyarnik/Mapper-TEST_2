@@ -1,4 +1,9 @@
 {
-  "name": "static_basic",
-  "status": "scaffold"
+  "fields": ["label", "role", "unit", "location", "hierarchy", "is_control", "is_power", "features_info"],
+  "encode": {
+    "type": "onehot",
+    "roles": ["sensor", "actuator"],
+    "units": ["DEGC", "DEGF", "%", "PA", "KPA", "INH2O", "PSI", "CFM", "L/S", "M3/H", "KW", "KWH", "MWH", "STATE", "BOOL"],
+    "features": ["is_control", "is_power"]
+  }
 }

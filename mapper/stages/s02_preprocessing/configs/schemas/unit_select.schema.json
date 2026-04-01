@@ -1,4 +1,30 @@
 {
-  "name": "unit_select.schema.json",
-  "status": "scaffold"
+  "type": "object",
+  "required": ["candidate_sources", "strictness", "min_fraction"],
+  "properties": {
+    "unit_contract": {"type": "object"},
+    "candidate_sources": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["meta_unit_candidates", "meta_unit", "contract_keyword_map", "candidate_rules", "value_rules"]
+      }
+    },
+    "contract_keyword_fields": {"type": "array", "items": {"type": "string"}},
+    "candidate_rules": {"type": "array"},
+    "value_rules": {"type": "array"},
+    "strictness": {
+      "type": "object",
+      "properties": {
+        "on_empty_series": {"type": "string", "enum": ["raise", "warn", "skip"]},
+        "on_missing_candidates": {"type": "string", "enum": ["raise", "warn", "skip"]},
+        "on_no_matching_tests": {"type": "string", "enum": ["raise", "warn", "skip"]},
+        "on_below_min_fraction": {"type": "string", "enum": ["raise", "warn", "skip"]}
+      }
+    },
+    "filter_candidates_to_tests": {"type": "boolean"},
+    "min_fraction": {"type": "number"},
+    "tests": {"type": "object"},
+    "select_settings": {"type": "object"}
+  }
 }

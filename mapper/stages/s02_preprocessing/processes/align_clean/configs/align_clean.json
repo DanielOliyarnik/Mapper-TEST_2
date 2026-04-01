@@ -1,4 +1,8 @@
 {
-  "name": "align_clean",
-  "status": "scaffold"
+  "resample_freq": "15min",
+  "ffill_limit_minutes": 60,
+  "bounds": {
+    "lo": null,
+    "hi": null
+  }
 }

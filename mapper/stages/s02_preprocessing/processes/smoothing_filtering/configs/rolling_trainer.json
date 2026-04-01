@@ -1,4 +1,24 @@
 {
-  "name": "rolling_trainer",
-  "status": "scaffold"
+  "default": {
+    "method": "rolling_mean",
+    "params": {
+      "center": true,
+      "min_periods": 1
+    },
+    "candidates": {
+      "window": [3, 5, 7, 9, 11]
+    }
+  },
+  "selectors": [],
+  "sample_keys": 256,
+  "warm_start_model": false,
+  "warm_start_hparams": false,
+  "align_for_train": {
+    "resample_freq": "15min",
+    "ffill_limit_minutes": 60,
+    "bounds": {
+      "lo": null,
+      "hi": null
+    }
+  }
 }

@@ -1,8 +1,8 @@
 DATA_SOURCE:
-  dataset: "<dataset_name>"
-  input_root: "<dataset_raw_data_root>"
+  dataset: dryad_blg59
+  input_root: /home/daniel/Mapper-Design/mapper-runpod/mapper-data-root/DRYAD_BLG59/raw-data
 
-output_root: "<dataset_mapper_data_root>"
+output_root: /home/daniel/Mapper-Design/mapper-runpod/mapper-data-root/DRYAD_BLG59/mapper-data
 
 s01_data:
   io:
@@ -32,11 +32,6 @@ s02_preprocessing:
         config_name: features_trainer
     - module: static_encode
       config_name: static_basic
-
-s03_embedding: {}
-s04_similarity: {}
-s05_gnn: {}
-s07_surrogates: {}
 
 exec:
   reporting:

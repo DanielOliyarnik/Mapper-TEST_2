@@ -1,4 +1,15 @@
 {
-  "name": "preprocessing_meta_contract.schema.json",
-  "status": "scaffold"
+  "type": "object",
+  "required": ["strict", "required_fields", "optional_fields", "passthrough_mode", "list_fields", "null_like"],
+  "properties": {
+    "strict": {"type": "boolean"},
+    "required_fields": {"type": "array", "items": {"type": "string"}},
+    "optional_fields": {"type": "array", "items": {"type": "string"}},
+    "passthrough_mode": {
+      "type": "string",
+      "enum": ["none", "optional_only", "all"]
+    },
+    "list_fields": {"type": "array", "items": {"type": "string"}},
+    "null_like": {"type": "array"}
+  }
 }
