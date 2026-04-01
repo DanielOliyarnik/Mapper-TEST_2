@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Iterable
-
 import pandas as pd
+from typing import Any, Callable, Iterable
 
 from mapper.features.criteria_generator import generate_configs_for_keys
 from mapper.features.match_fields import coerce_match_fields, normalize_feature_specs

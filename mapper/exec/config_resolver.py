@@ -39,12 +39,18 @@ def _selection_from_args(args: Iterable[str] | None, stage_specs: dict[str, Stag
     return tuple(dict.fromkeys(selected))
 
 
-def normalize_stage_selection(args: Iterable[str] | None, stage_specs: dict[str, StageSpec]) -> tuple[str, ...]:
-    return _selection_from_args(args, stage_specs, default_all=True)
+def _normalize_stage_selection(args: Iterable[str] | None, stage_specs: dict[str, StageSpec]) -> tuple[str, ...]:
+    return _selection_from_args(args, stage_specs, default_all=True) # Stage selection -> dafault: True
 
 
-def normalize_retrain_selection(args: Iterable[str] | None, stage_specs: dict[str, StageSpec]) -> tuple[str, ...]:
-    return _selection_from_args(args, stage_specs, default_all=False)
+def _normalize_retrain_selection(args: Iterable[str] | None, stage_specs: dict[str, StageSpec]) -> tuple[str, ...]:
+    return _selection_from_args(args, stage_specs, default_all=False) # Train selection -> dafault: False
+
+
+# def snapshot_stage_config(cfg: Mapping[str, Any], out_path: Path) -> Path:
+#     out_path.parent.mkdir(parents=True, exist_ok=True)
+#     out_path.write_text(json.dumps(dict(cfg), indent=2, sort_keys=True, default=str), encoding="utf-8")
+#     return out_path
 
 
 def load_run_config(path: str | Path) -> dict[str, Any]:
@@ -69,7 +75,7 @@ def load_run_config(path: str | Path) -> dict[str, Any]:
     return loaded
 
 
-def resolve_dataset_id(cfg: dict[str, Any]) -> str:
+def _resolve_dataset_id(cfg: dict[str, Any]) -> str:
     if "DATA_SOURCE" not in cfg or not isinstance(cfg["DATA_SOURCE"], dict):
         raise ValueError("Run config must define DATA_SOURCE as an object")
     data_source = cfg["DATA_SOURCE"]
@@ -81,16 +87,16 @@ def resolve_dataset_id(cfg: dict[str, Any]) -> str:
     return dataset_id
 
 
-def resolve_enabled_stages(
+def _resolve_enabled_stages(
     cfg: dict[str, Any],
     requested: Iterable[str] | None,
     stage_specs: dict[str, StageSpec],
 ) -> tuple[str, ...]:
     _ = cfg
-    return normalize_stage_selection(requested, stage_specs)
+    return _normalize_stage_selection(requested, stage_specs)
 
 
-def resolve_stage_task_name(cfg: dict[str, Any], stage_name: str, stage_def: Any) -> str:
+def _resolve_stage_task_name(cfg: dict[str, Any], stage_name: str, stage_def: Any) -> str:
     stage_cfg = cfg.get(stage_name, {})
     task_name = stage_cfg.get("task") or stage_cfg.get("task_name") or stage_def.spec.default_task
     task_name = str(task_name)
@@ -99,27 +105,7 @@ def resolve_stage_task_name(cfg: dict[str, Any], stage_name: str, stage_def: Any
     return task_name
 
 
-def resolve_stage_task_config(cfg: dict[str, Any], stage_name: str, task_name: str) -> dict[str, Any]:
-    if "DATA_SOURCE" not in cfg or not isinstance(cfg["DATA_SOURCE"], dict):
-        raise ValueError(f"Run config must define DATA_SOURCE for stage {stage_name}")
-    stage_cfg = dict(cfg["DATA_SOURCE"])
-    if stage_name in cfg:
-        if not isinstance(cfg[stage_name], dict):
-            raise TypeError(f"Run config section {stage_name} must be an object")
-        stage_cfg.update(dict(cfg[stage_name]))
-    if "dataset" not in stage_cfg:
-        raise ValueError(f"Run config must define dataset for stage {stage_name}")
-    stage_cfg["task_name"] = task_name
-    return stage_cfg
-
-
-def snapshot_stage_config(cfg: Mapping[str, Any], out_path: Path) -> Path:
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(json.dumps(dict(cfg), indent=2, sort_keys=True, default=str), encoding="utf-8")
-    return out_path
-
-
-def resolve_reporting_config(cfg: dict[str, Any]) -> dict[str, Any]:
+def _resolve_reporting_config(cfg: dict[str, Any]) -> dict[str, Any]:
     exec_cfg = cfg.get("exec", {})
     reporting_cfg = dict(exec_cfg.get("reporting", {}))
     reporting_cfg.setdefault("console", True)
@@ -140,18 +126,18 @@ def normalize_run_config(
     stage_specs: dict[str, StageSpec],
     stage_defs: Mapping[str, Any] | None = None,
 ) -> ResolvedRunConfig:
-    dataset_id = resolve_dataset_id(cfg)
+    dataset_id = _resolve_dataset_id(cfg)
     if "output_root" not in cfg:
         raise ValueError("Run config must define output_root")
     output_root = Path(cfg["output_root"])
-    requested_stages = resolve_enabled_stages(cfg, stages, stage_specs)
-    retrain_stages = normalize_retrain_selection(retrain, stage_specs)
+    requested_stages = _resolve_enabled_stages(cfg, stages, stage_specs)
+    retrain_stages = _normalize_retrain_selection(retrain, stage_specs)
     stage_task_names = {
-        stage_name: resolve_stage_task_name(cfg, stage_name, stage_defs[stage_name])
+        stage_name: _resolve_stage_task_name(cfg, stage_name, stage_defs[stage_name])
         for stage_name in requested_stages
         if stage_defs is not None
     }
-    reporting_cfg = resolve_reporting_config(cfg)
+    reporting_cfg = _resolve_reporting_config(cfg)
     return ResolvedRunConfig(
         run_name=run_name,
         dataset_id=dataset_id,
@@ -162,3 +148,16 @@ def normalize_run_config(
         reporting_cfg=reporting_cfg,
         raw_cfg=cfg,
     )
+
+def resolve_stage_task_config(cfg: dict[str, Any], stage_name: str, task_name: str) -> dict[str, Any]:
+    if "DATA_SOURCE" not in cfg or not isinstance(cfg["DATA_SOURCE"], dict):
+        raise ValueError(f"Run config must define DATA_SOURCE for stage {stage_name}")
+    stage_cfg = dict(cfg["DATA_SOURCE"])
+    if stage_name in cfg:
+        if not isinstance(cfg[stage_name], dict):
+            raise TypeError(f"Run config section {stage_name} must be an object")
+        stage_cfg.update(dict(cfg[stage_name]))
+    if "dataset" not in stage_cfg:
+        raise ValueError(f"Run config must define dataset for stage {stage_name}")
+    stage_cfg["task_name"] = task_name
+    return stage_cfg
