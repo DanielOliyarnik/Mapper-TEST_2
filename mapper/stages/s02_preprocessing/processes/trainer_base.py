@@ -43,8 +43,8 @@ class TrainerBase(ABC):
         align_cfg = self.cfg.get("align_for_train", False)
         if not align_cfg:
             return default_read_fn
-        from .align_clean.process import Process as AlignCleanProcess
 
+        from .align_clean.process import Process as AlignCleanProcess
         align_proc = AlignCleanProcess(cfg=align_cfg, reporter=self.reporter, progress=self.progress)
 
         def _read_aligned(key: str) -> pd.Series | None:

@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from typing import Any, Callable
 
-from .match_fields import coerce_match_fields, normalize_feature_specs, project_match_fields
+from .match_fields import build_match_fields, normalize_feature_specs, project_match_fields
 from .registry import get_feature, try_import_dataset_feature
 
 
@@ -32,7 +32,7 @@ def _resolve_feature_specs(trainer_cfg: dict[str, Any], template: dict[str, Any]
 
 
 def _resolve_match_fields(trainer_cfg: dict[str, Any]) -> list[str]:
-    return coerce_match_fields(trainer_cfg.get("match_fields"))
+    return build_match_fields(trainer_cfg.get("match_fields"))
 
 
 def _apply_prefilter(rows: list[dict[str, Any]], prefilter: dict[str, Any]) -> list[dict[str, Any]]:
@@ -78,6 +78,8 @@ def generate_configs_for_keys(
         filtered_rows = _apply_prefilter(rows, spec.get("prefilter") or {})
         sample_row = filtered_rows[0] if filtered_rows else {"key": None}
         static_payload = project_match_fields(sample_row, match_fields, secondary=None)
+        # NOTE: both infer_attributes() and match() are "None" for the series -> will later see how that can be used
+        #       series will require _read_fn()
         attrs = plugin.infer_attributes(None, static_payload, spec.get("attributes") or {})
         cfg_payload = dict(template.get(feature_name, {}))
         cfg_payload.setdefault("attributes", {})

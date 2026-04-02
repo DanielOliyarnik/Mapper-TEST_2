@@ -7,7 +7,7 @@ def is_missing(value: Any) -> bool:
     return value is None or value == ""
 
 
-def coerce_match_fields(match_fields: Any, context_name: str = "match_fields") -> list[str]:
+def build_match_fields(match_fields: Any, context_name: str = "match_fields") -> list[str]:
     if match_fields is None:
         return []
     if isinstance(match_fields, str):

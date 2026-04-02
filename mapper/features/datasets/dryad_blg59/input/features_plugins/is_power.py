@@ -15,7 +15,7 @@ def _normalize_units(raw: Any) -> list[str]:
 
 
 def _classify_power_kind(unit: str, cfg: dict[str, Any]) -> str:
-    electric_terms = [str(item).upper() for item in cfg.get("electric_terms", ["KW", "KWH", "W"]) ]
+    electric_terms = [str(item).upper() for item in cfg.get("electric_terms", ["KW", "KWH", "W"])] # Can just be configured via config (most datasets)
     if label_in_list(unit, electric_terms):
         return "electric"
     return "generic"
