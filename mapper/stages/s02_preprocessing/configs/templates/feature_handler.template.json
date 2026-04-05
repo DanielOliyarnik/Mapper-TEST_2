@@ -1,0 +1,31 @@
+{
+  "use_template_features": false,
+  "match_fields": [
+    "key",
+    "label",
+    "role",
+    "unit",
+    "unit_candidates",
+    "location",
+    "hierarchy",
+    "zone_id",
+    "loop_ids",
+    "group_id",
+    "equip_id",
+    "class",
+    "brick_class"
+  ],
+  "list_joiner": "|",
+  "on_feature_error": "raise",
+  "features": [
+    {
+      "name": "is_control",
+      "criteria_overrides": {
+        "attributes": {
+          "control_terms": ["CMD", "SET"]
+        }
+      }
+    }
+  ],
+  "write_features_info": true
+}

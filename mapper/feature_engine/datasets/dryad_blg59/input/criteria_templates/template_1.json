@@ -1,0 +1,23 @@
+{
+  "is_control": {
+    "logic": "all",
+    "metadata_rules": [
+      {"field": "label", "op": "contains_any", "values": ["CMD", "SET"]}
+    ],
+    "timeseries_rules": [],
+    "attributes": {
+      "control_terms": ["CMD", "SET"]
+    }
+  },
+  "is_power": {
+    "logic": "any",
+    "metadata_rules": [
+      {"field": "unit", "op": "in", "values": ["KW", "KWH", "W"]},
+      {"field": "unit_candidates", "op": "contains_any", "values": ["KW", "KWH", "W"]}
+    ],
+    "timeseries_rules": [],
+    "attributes": {
+      "electric_terms": ["KW", "KWH", "W"]
+    }
+  }
+}

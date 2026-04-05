@@ -1,0 +1,11 @@
+{
+  "attributes": {
+    "control_terms": ["CMD", "SET"]
+  },
+  "logic": "all",
+  "metadata_rules": [
+    {"field": "label", "op": "contains_any", "values": ["CMD", "SET"]}
+  ],
+  "name": "is_control",
+  "timeseries_rules": []
+}

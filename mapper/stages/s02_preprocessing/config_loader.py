@@ -94,8 +94,8 @@ def _load_json(path: Path) -> dict[str, Any]:
 
 def _bind_dataset_context(process_name: str, resolved_cfg: dict[str, Any], dataset_id: str) -> dict[str, Any]:
     bound = dict(resolved_cfg)
-    if process_name == "features_constructor" and not str(bound.get("dataset") or "").strip():
-        bound["dataset"] = dataset_id
+    if process_name == "feature_handler" and not str(bound.get("dataset_id") or "").strip():
+        bound["dataset_id"] = dataset_id
     return bound
 
 

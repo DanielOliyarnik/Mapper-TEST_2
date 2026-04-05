@@ -1,0 +1,8 @@
+{
+  "example_feature": {
+    "logic": "all",
+    "metadata_rules": [],
+    "timeseries_rules": [],
+    "attributes": {}
+  }
+}

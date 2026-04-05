@@ -1,0 +1,22 @@
+{
+  "use_template_features": true,
+  "match_fields": [
+    "key",
+    "label",
+    "role",
+    "unit",
+    "unit_candidates",
+    "location",
+    "hierarchy",
+    "zone_id",
+    "loop_ids",
+    "group_id",
+    "equip_id",
+    "class",
+    "brick_class"
+  ],
+  "list_joiner": "|",
+  "on_feature_error": "raise",
+  "features": [],
+  "write_features_info": true
+}

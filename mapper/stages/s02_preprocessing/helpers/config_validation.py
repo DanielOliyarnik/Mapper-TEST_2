@@ -24,7 +24,15 @@ _ALLOWED_VALUE_CONDITION_KEYS = {"min_gte", "min_gt", "max_lte", "max_lt", "rang
 _ALLOWED_UNIT_SELECTION_KEYS = {"unit_contract", "candidate_sources", "contract_keyword_fields", "candidate_rules", "value_rules", "strictness", "filter_candidates_to_tests", "min_fraction", "tests", "select_settings"}
 _ALLOWED_SMOOTHING_KEYS = {"default", "selectors", "sample_keys"}
 _ALLOWED_FLAGGING_KEYS = {"fillna_strategy", "fillna_value", "rules"}
-_ALLOWED_FEATURES_CONSTRUCTOR_KEYS = {"dataset", "use_template_features", "match_fields", "list_joiner", "on_feature_error", "features", "write_features_info"}
+_ALLOWED_FEATURE_HANDLER_KEYS = {
+    "dataset_id",
+    "use_template_features",
+    "match_fields",
+    "list_joiner",
+    "on_feature_error",
+    "features",
+    "write_features_info",
+}
 
 
 def _err(errors: list[str], message: str) -> None:
@@ -480,37 +488,39 @@ def validate_flagging_cfg(cfg: dict[str, Any] | None, errors: list[str]) -> None
                     _err(errors, f"{rpath}.params.threshold must be numeric")
 
 
-def validate_features_constructor_cfg(cfg: dict[str, Any] | None, errors: list[str]) -> None:
+def validate_feature_handler_cfg(cfg: dict[str, Any] | None, errors: list[str], section_name: str = "feature_handler") -> None:
     if not isinstance(cfg, dict):
-        _err(errors, "features_constructor config must be object")
+        _err(errors, f"{section_name} config must be object")
         return
-    _validate_unknown_keys("features_constructor", cfg, _ALLOWED_FEATURES_CONSTRUCTOR_KEYS, errors)
-    dataset = cfg.get("dataset")
-    if not _is_non_empty_str(dataset):
-        _err(errors, "features_constructor.dataset is required and must be non-empty string")
+    _validate_unknown_keys(section_name, cfg, _ALLOWED_FEATURE_HANDLER_KEYS, errors)
+    dataset_id = cfg.get("dataset_id")
+    if dataset_id is None:
+        _err(errors, f"{section_name}.dataset_id is required after Stage 2 config binding")
+    elif not _is_non_empty_str(dataset_id):
+        _err(errors, f"{section_name}.dataset_id must be non-empty string")
     use_template_features = cfg.get("use_template_features")
     if not isinstance(use_template_features, bool):
-        _err(errors, "features_constructor.use_template_features must be boolean")
+        _err(errors, f"{section_name}.use_template_features must be boolean")
     match_fields = cfg.get("match_fields")
     if not _is_list_of_str(match_fields) or not match_fields:
-        _err(errors, "features_constructor.match_fields must be non-empty list[str]")
+        _err(errors, f"{section_name}.match_fields must be non-empty list[str]")
     list_joiner = cfg.get("list_joiner")
     if list_joiner is not None and not _is_non_empty_str(list_joiner):
-        _err(errors, "features_constructor.list_joiner must be non-empty string")
+        _err(errors, f"{section_name}.list_joiner must be non-empty string")
     write_features_info = cfg.get("write_features_info")
     if write_features_info is not None and not isinstance(write_features_info, bool):
-        _err(errors, "features_constructor.write_features_info must be boolean")
+        _err(errors, f"{section_name}.write_features_info must be boolean")
     policy = str(cfg.get("on_feature_error", "")).strip().lower()
     if policy not in _ALLOWED_FEATURE_ERROR_POLICY:
-        _err(errors, f"features_constructor.on_feature_error invalid '{cfg.get('on_feature_error')}'")
+        _err(errors, f"{section_name}.on_feature_error invalid '{cfg.get('on_feature_error')}'")
     features = cfg.get("features")
     if features is not None and not isinstance(features, list):
-        _err(errors, "features_constructor.features must be list")
+        _err(errors, f"{section_name}.features must be list")
         features = []
     if not (features and len(features) > 0) and not bool(use_template_features):
-        _err(errors, "features_constructor requires non-empty features[] or use_template_features=true")
+        _err(errors, f"{section_name} requires non-empty features[] or use_template_features=true")
     for idx, feature in enumerate(features or []):
-        fpath = f"features_constructor.features[{idx}]"
+        fpath = f"{section_name}.features[{idx}]"
         if not isinstance(feature, dict):
             _err(errors, f"{fpath} must be object")
             continue
@@ -519,6 +529,12 @@ def validate_features_constructor_cfg(cfg: dict[str, Any] | None, errors: list[s
         fm_fields = feature.get("match_fields")
         if fm_fields is not None and not _is_list_of_str(fm_fields):
             _err(errors, f"{fpath}.match_fields must be list[str]")
+        candidate_filter = feature.get("candidate_filter")
+        if candidate_filter is not None and not isinstance(candidate_filter, dict):
+            _err(errors, f"{fpath}.candidate_filter must be object when provided")
+        criteria_overrides = feature.get("criteria_overrides")
+        if criteria_overrides is not None and not isinstance(criteria_overrides, dict):
+            _err(errors, f"{fpath}.criteria_overrides must be object when provided")
 
 
 def _validate_process_list(processes: Any, errors: list[str]) -> list[dict[str, Any]]:
@@ -576,8 +592,8 @@ def validate_preprocessing_startup(stage_cfg: dict[str, Any] | None, resolved_pr
             validate_smoothing_cfg(proc_cfg, errors)
         elif name == "flagging":
             validate_flagging_cfg(proc_cfg, errors)
-        elif name == "features_constructor":
-            validate_features_constructor_cfg(proc_cfg, errors)
+        elif name == "feature_handler":
+            validate_feature_handler_cfg(proc_cfg, errors, section_name="feature_handler")
     if errors:
         header = f"{ERR_PREFIX}: startup configuration validation failed with {len(errors)} error(s) ===-"
         body = "\n".join(f"  - {msg}" for msg in errors)

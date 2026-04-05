@@ -25,11 +25,8 @@ s02_preprocessing:
         config_name: rolling_trainer
     - module: flagging
       config_name: flags_basic
-    - module: features_constructor
-      config_name: features_constructor
-      trainer:
-        enabled: true
-        config_name: features_trainer
+    - module: feature_handler
+      config_name: feature_handler
     - module: static_encode
       config_name: static_basic
 

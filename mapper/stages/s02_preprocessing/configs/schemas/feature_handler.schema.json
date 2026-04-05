@@ -1,0 +1,25 @@
+{
+  "type": "object",
+  "required": ["match_fields", "on_feature_error", "use_template_features"],
+  "properties": {
+    "dataset_id": {"type": "string"},
+    "use_template_features": {"type": "boolean"},
+    "match_fields": {"type": "array", "items": {"type": "string"}},
+    "list_joiner": {"type": "string"},
+    "on_feature_error": {"type": "string", "enum": ["raise", "warn", "skip"]},
+    "write_features_info": {"type": "boolean"},
+    "features": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {"type": "string"},
+          "match_fields": {"type": "array", "items": {"type": "string"}},
+          "candidate_filter": {"type": "object"},
+          "criteria_overrides": {"type": "object"}
+        }
+      }
+    }
+  }
+}

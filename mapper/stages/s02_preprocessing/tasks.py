@@ -155,14 +155,19 @@ def run_process_pipeline(
         request.progress.start("preprocess", total=total, unit="key")
 
     with open_ts_store(upstream["ts_path"]) as ts_hdf5, PreprocWriter(request.data_dir) as writer:
+        def _read_runtime_series(key: str) -> pd.Series | None:
+            return read_series_for_key(ts_hdf5, str(key), start_ts, end_ts)
+
         for index, key in enumerate(keys, 1):
-            series = read_series_for_key(ts_hdf5, str(key), start_ts, end_ts)
+            series = _read_runtime_series(str(key))
             if series is None or series.empty:
                 skipped_no_data += 1
                 if request.progress is not None:
                     request.progress.update(index, total=total, extra={"written": len(written_keys), "skipped": skipped_no_data + skipped_after_process})
                 continue
 
+            runtime_context = dict(shared_context)
+            runtime_context["_read_fn"] = _read_runtime_series
             payload: dict[str, Any] = {
                 "key": str(key),
                 "series": series,
@@ -170,7 +175,7 @@ def run_process_pipeline(
                 "static": {},
                 "meta": upstream["meta_lookup"].get(str(key), {}),
                 "meta_contract_fields": upstream["meta_fields"],
-                "runtime_context": shared_context,
+                "runtime_context": runtime_context,
                 "unit_contract": shared_context.get("unit_contract"),
             }
 

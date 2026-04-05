@@ -1,0 +1,12 @@
+{
+  "attributes": {
+    "electric_terms": ["KW", "KWH", "W"]
+  },
+  "logic": "any",
+  "metadata_rules": [
+    {"field": "unit", "op": "in", "values": ["KW", "KWH", "W"]},
+    {"field": "unit_candidates", "op": "contains_any", "values": ["KW", "KWH", "W"]}
+  ],
+  "name": "is_power",
+  "timeseries_rules": []
+}
