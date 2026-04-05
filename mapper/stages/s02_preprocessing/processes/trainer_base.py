@@ -40,6 +40,30 @@ class TrainerBase(ABC):
             state["done"] = True
 
     def build_read_fn(self, name: str, default_read_fn: Callable[[str], pd.Series | None]) -> Callable[[str], pd.Series | None]:
+        # NOTE:
+        # The current `_read_fn` contract is intentionally narrow: it reads from the
+        # upstream Stage 1 timeseries store and can optionally wrap only `align_clean`.
+        # It does NOT reflect the evolving Stage 2 per-node payload after later
+        # processes such as smoothing, flagging, or any future semantic mutations.
+        #
+        # That means `_read_fn(key)` is currently suitable for:
+        # - trainer-side / calibration-side access to upstream series
+        # - optional pre-runtime alignment
+        #
+        # It is NOT a general "latest Stage 2 working series" reader.
+        #
+        # If the project later needs a more robust reader contract, the likely options
+        # are:
+        # - define a stage-working-series reader that replays an explicit subset of
+        #   prior processes on demand
+        # - persist an intermediate store for the intended process boundary and read
+        #   from that store instead
+        # - remove the extra reader path entirely where the current runtime payload is
+        #   already the authoritative source for the current node
+        #
+        # Until that is redesigned explicitly, code using `_read_fn` should assume it
+        # is an upstream / limited-preprocess reader rather than the canonical source
+        # of the current Stage 2 node state.
         align_cfg = self.cfg.get("align_for_train", False)
         if not align_cfg:
             return default_read_fn
